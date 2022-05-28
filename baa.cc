@@ -106,6 +106,7 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 	const std::vector<Float>& Q_i){
 	std::vector<std::vector<Float> > prob_table;
 
+	// Compute a table with the transition probabilities of the channel:
 	size_t n_I = transmitted.size();	prob_table.resize(n_I);
 	size_t n_J = received.size();		for_each(prob_table.begin(), prob_table.end(), [n_J](std::vector<Float>& row){
 											row.resize(n_J);
@@ -117,30 +118,12 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 		{
 			prob_table[i][j] = get_transition_prob(transmitted[i], received[j]);
 		}
-		if (not (abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10))
-		{
-			printf("%f\n", std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0));
-			printf("%f\n", prob_table[i][i]);
-			printf("%lu\n", i);
-			auto print = [](const Run& r){printf("(%lu, %d)\t", r.length, r.value);};
-			printf("Annoying codeword:\n");
-			for_each(transmitted[i].begin(), transmitted[i].end(), print);
-			printf("\n");
-			for (size_t j = 0; j < n_J; ++j)
-			{
-				if (prob_table[i][j] > 0.1)
-				{
-					printf("Accomplice (%f, %lu):\n", prob_table[i][j], j);
-					get_transition_prob(transmitted[i], received[j], true);
-					for_each(transmitted[j].begin(), transmitted[j].end(), print);
-					printf("\n");
-				}
-			}
-		}
+		// For debugging purposes - make sure probabilities sum up to 1:
 		assert(abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10);
-		assert(abs(prob_table[i][i] - 1) < 1E-10);
 	}
 
+	// In the equation for a BAA step, one has a summation / iteration over 3 indices which would result in a
+	// 	a very heavy algorithm. In order to avoid this, we cache the value of \sum_i Q_i * P_{j,i} for all values of j.
 	std::vector<Float> denominator; denominator.resize(n_J);
 	for (size_t j = 0; j < n_J; ++j)
 	{
@@ -150,17 +133,23 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 			denominator[j] += prob_table[i][j] * Q_i[i];
 		}
 	}
+	assert(abs(std::accumulate(denominator.begin(), denominator.end(), 0.0) - 1.0) < 1E-10);
 
+	// In the BAA step, we want to compute Q_k = \alpha_k / \sum_k \alpha_k, where 
+	// 			\alpha_k = \exp {\sum_j P_{j,k} ln(\frac{Q_k P_{j,k}}{\sum_i Q_i * P_{j,i}})}
 	std::vector<Float> log_alphas; log_alphas.resize(n_I);
 	for (size_t k = 0; k < n_I; ++k)
 	{
 		log_alphas[k] = 0.0;
 		for (size_t j = 0; j < n_J; ++j)
 		{
+			// These entries of the probability table should have a negligible effect on the resulting distribution
+			// 	(if we had infinite precision) and keeping them can cause outcomes to be nan.
 			if (prob_table[k][j] < 1E-12)
 			{
 				continue;
 			}
+			// Similarly cap other values that go into the logarithm.
 			if (std::isnan(denominator[j]) or denominator[j] < 1E-50)
 			{
 				denominator[j] = 1E-50;
@@ -169,16 +158,19 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 		}
 	}
 
+	// Shift the log_alphas so that their maximal element is 0. This helps prevent numerical problems in exponentiation.
 	Float max_log_alpha = *max_element(log_alphas.begin(), log_alphas.end());
 	for_each(log_alphas.begin(), log_alphas.end(), [max_log_alpha](Float& log_alpha){
 		log_alpha = exp(log_alpha - max_log_alpha);
 	});
 
+	// Normalize the alphas so that their sum is 1.
 	Float sum = std::accumulate(log_alphas.begin(), log_alphas.end(), 0.0);
 	for_each(log_alphas.begin(), log_alphas.end(), [sum](Float& alpha){
 		alpha /= sum;
 	});
 
+	// These should be the probabilities at the end of the BAA step.
 	return log_alphas;
 }
 

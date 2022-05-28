@@ -210,7 +210,7 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 
 	// The probability that before we started recieving the ith run of the received codeword, j of the runs of the transmitted
 	//  codeword were deleted.
-	std::array<std::array<Float, 8>, 8> dynamic_programming_state;
+	std::array<std::array<Float, 15>, 15> dynamic_programming_state;
 	for (auto iter1 = dynamic_programming_state.begin(); iter1 != dynamic_programming_state.end(); ++iter1)
 	{
 		for (auto iter2 = iter1->begin(); iter2 != iter1->end(); ++iter2)

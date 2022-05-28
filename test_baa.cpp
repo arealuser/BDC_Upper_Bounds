@@ -11,7 +11,7 @@
 
 int main(int argc, char const *argv[])
 {
-	Float deletion_probability = 0.0;
+	Float deletion_probability = 0.5;
 	initialize_channel(deletion_probability);
 
 	auto transmitted_codewords = get_all_codewords(10, 10);

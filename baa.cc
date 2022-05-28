@@ -130,8 +130,9 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 			{
 				if (prob_table[i][j] > 0.1)
 				{
-					printf("Accomplice (%f):\n", prob_table[i][j]);
-					for_each(transmitted[i].begin(), transmitted[i].end(), print);
+					printf("Accomplice (%f, %lu):\n", prob_table[i][j], j);
+					get_transition_prob(transmitted[i], received[j], true);
+					for_each(transmitted[j].begin(), transmitted[j].end(), print);
 					printf("\n");
 				}
 			}

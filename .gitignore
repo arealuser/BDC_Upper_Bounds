@@ -1,5 +1,7 @@
 *.out.*
-a.out
+*.out
 *.txt
 .*/
 workspace.code-workspace
+*.o
+*.array

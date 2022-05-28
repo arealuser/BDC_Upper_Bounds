@@ -11,7 +11,6 @@
 
 int main(int argc, char const *argv[])
 {
-
 	Float deletion_probability = 0.9;
 	initialize_channel(deletion_probability);
 
@@ -28,7 +27,7 @@ int main(int argc, char const *argv[])
 	Q.resize(transmitted_codewords.size());
 	std::for_each(Q.begin(), Q.end(), [transmitted_codewords](Float& Q){Q = 1.0 / transmitted_codewords.size();});
 
-	std::vector<std::vector<Float> > Qs = {Q};
+	std::vector<std::vector<Float> > Qs = {Q, Q, Q, Q, Q, Q, Q};
 
 
 	for (int i = 0; i < 5; ++i)

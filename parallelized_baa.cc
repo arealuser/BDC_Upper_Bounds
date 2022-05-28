@@ -3,7 +3,7 @@
 std::vector<std::vector<Float> > compute_all_log_Wjk_den_parallelized (const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
 	const std::vector<std::vector<Float> >& Q_is){
 	size_t n_Q = Q_is.size();
-	size_t n_I = transmitted.size();
+	// size_t n_I = transmitted.size();
 	size_t n_J = received.size();
 
 	std::vector<std::vector<Float> > res; res.resize(n_Q);
@@ -70,7 +70,7 @@ std::vector<std::vector<Float> > do_full_baa_step_parallelized(const std::vector
 	auto log_alphass = compute_all_log_alpha_k_parallelized(transmitted, received, Q_is, log_W_jk_den);
 
 	size_t n_Q = Q_is.size();
-	for (int i_Q = 0; i_Q < n_Q; ++i_Q)
+	for (size_t i_Q = 0; i_Q < n_Q; ++i_Q)
 	{
 		// std::vector<Float>& log_alphas = log_alphass[i_Q];
 		Float max_log_alpha = *std::max_element(log_alphass[i_Q].begin(), log_alphass[i_Q].end());

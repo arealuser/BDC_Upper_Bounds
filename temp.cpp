@@ -21,8 +21,25 @@ struct Sum
     int sum{0};
 };
  
-int main()
+int main(int argc, char const *argv[])
 {
+
+    if (argc > 1)
+    {
+        FILE* in_file = fopen(argv[1], "r");
+        auto arr = load_array_from_file(in_file);
+        printf("array shape = (%lu, %lu)\n", arr.size(), arr[0].size());
+        printf("arr =\n");
+        auto print = [](const Float& n) { std::cout << " " << n; };
+        auto print_vec = [print](const std::vector<Float>& v) { std::for_each(v.begin(), v.end(), print); std::cout << std::endl;};
+        std::for_each(arr.begin(), arr.end(), print_vec);
+        if (argc > 2)
+        {
+            FILE* out_file = fopen(argv[2], "w");
+            write_array_to_file(out_file, arr);
+        }
+    }
+    
 
     // auto t1 = clock();
     // double value = 1.00000001;

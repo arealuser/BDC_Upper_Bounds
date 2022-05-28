@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
 	std::vector<BitCodeWord> bit_transmitted_codewords(transmitted_codewords.size());
 	auto t_iter = transmitted_codewords.begin();
 	std::generate(bit_transmitted_codewords.begin(), bit_transmitted_codewords.end(), [&](){return convert_to_bit_word(*(t_iter++));});
-	for (int i = 0; i < transmitted_codewords.size(); ++i)
+	for (size_t i = 0; i < transmitted_codewords.size(); ++i)
 	{
 		assert(convert_to_run_word(bit_transmitted_codewords[i]) == transmitted_codewords[i]);
 	}
@@ -48,7 +48,7 @@ int main(int argc, char const *argv[])
 	std::vector<BitCodeWord> bit_received_codewords(received_codewords.size());
 	auto r_iter = received_codewords.begin();
 	std::generate(bit_received_codewords.begin(), bit_received_codewords.end(), [&](){return convert_to_bit_word(*(r_iter++));});
-	for (int i = 0; i < received_codewords.size(); ++i)
+	for (size_t i = 0; i < received_codewords.size(); ++i)
 	{
 		assert(convert_to_run_word(bit_received_codewords[i]) == received_codewords[i]);
 	}
@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
 	printf("%lu possible transmitted codewords\n", transmitted_codewords.size());
 	printf("%lu possible received codewords\n", received_codewords.size());
 	Float s = 0;
-	size_t total_length = 0;
+	// size_t total_length = 0;
 	auto t0 = clock();
 	size_t counter = 0;
 

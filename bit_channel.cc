@@ -12,7 +12,7 @@ Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord&
 
 	// printf("sr = %lu, st = %lu\n", sr, st);
 
-	for (int it = 0; it < st; ++it)
+	for (size_t it = 0; it < st; ++it)
 	{
 		dynamic_programming_state[it] = 1;
 	}
@@ -38,7 +38,7 @@ Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord&
 				dynamic_programming_state[(ir * st) + it] += dynamic_programming_state[((ir-1) * st) + (it-1)];
 			}
 		}
-		// for (int i = 0; i < st; ++i)
+		// for (size_t i = 0; i < st; ++i)
 		// {
 		// 	printf("%lu\t", dynamic_programming_state[(ir * st) + i]);
 		// }
@@ -52,14 +52,14 @@ Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord&
 	{
 		printf("%lu, %lu\n", transmitted.size(), recieved.size());
 		printf("transmitted = [");
-		for (int i = 0; i < transmitted.size(); ++i)
+		for (size_t i = 0; i < transmitted.size(); ++i)
 		{
 			printf("%d, ", transmitted[i]);
 		}
 		printf("]\n");
 
 		printf("recieved = [");
-		for (int i = 0; i < recieved.size(); ++i)
+		for (size_t i = 0; i < recieved.size(); ++i)
 		{
 			printf("%d, ", recieved[i]);
 		}
@@ -96,7 +96,7 @@ CodeWord convert_to_run_word(const BitCodeWord& bit_code){
 BitCodeWord convert_to_bit_word(const CodeWord& run_word){
 	BitCodeWord res;
 	for(auto iter = run_word.begin(); iter != run_word.end(); ++iter){
-		for (int i = 0; i < iter -> length; ++i)
+		for (size_t i = 0; i < iter -> length; ++i)
 		{
 			res.push_back(iter -> value);
 		}

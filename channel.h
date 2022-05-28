@@ -36,8 +36,8 @@ struct Run{
 	/*
 	Our code will be made up of "runs" of 0s or 1s. Each run will have a positive length and a boolean value
 	*/
-	size_t length;
 	bool value;
+	size_t length;
 	inline Run(bool val=0, size_t len=0): value(val), length(len) {}
 	inline Run(const Run& other): value(other.value), length(other.length) {}
 	inline Run(Run&& other): value(other.value), length(other.length) {}
@@ -171,14 +171,14 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 		if (received[0].value == transmitted[0].value)
 		{
 			Float product = len_to_len_transition_prob(transmitted[transmitted.size()-1].length, 0, true);
-			for (int i = 0; i < received.size(); ++i)
+			for (size_t i = 0; i < received.size(); ++i)
 			{
 				product *= run_to_run_transition_prob(transmitted[i], received[i]);
 			}
 			return product;
 		} else{
 			Float product = len_to_len_transition_prob(transmitted[0].length, 0);
-			for (int i = 0; i < received.size(); ++i)
+			for (size_t i = 0; i < received.size(); ++i)
 			{
 				product *= run_to_run_transition_prob(transmitted[i+1], received[i]);
 			}
@@ -193,7 +193,7 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 		{
 			printf("%.3f%%\n", product);
 		}
-		for (int i = 0; i < received.size(); ++i)
+		for (size_t i = 0; i < received.size(); ++i)
 		{
 			product *= run_to_run_transition_prob(transmitted[i+1], received[i]);
 		}
@@ -328,10 +328,10 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 	if (verbose)
 	{
 		printf("dynamic_programming_state = [\n");
-		for (int i = 0; i < received.size() + 1; ++i)
+		for (size_t i = 0; i < received.size() + 1; ++i)
 		{
 			printf("\t[");
-			for (int j = 0; j < num_dels + 1; ++j)
+			for (size_t j = 0; j < num_dels + 1; ++j)
 			{
 				printf("%.3f%%\t", 100*dynamic_programming_state[i][j]);
 			}
@@ -346,7 +346,7 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 		Float base_probability = dynamic_programming_state[received.size()][del_index];
 		Float deletion_probability = 1.0;
 		size_t trans_index = del_index + received.size();
-		for (int trans_index2 = trans_index; trans_index2 < transmitted.size(); ++trans_index2)
+		for (size_t trans_index2 = trans_index; trans_index2 < transmitted.size(); ++trans_index2)
 		{
 			deletion_probability *= len_to_len_transition_prob(transmitted[trans_index2].length, 0);
 		}

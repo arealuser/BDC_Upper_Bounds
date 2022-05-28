@@ -36,14 +36,14 @@ void initialize_channel(Float deletion_probability){
 	{
 		Float ndel_prob = (1 - len_to_len_transition_prob(transmitted_run, 0));
 		std::array<Float, MAX_RUN_LENGTH> cached_table;
-		for (int l1 = 0; l1 < MAX_RUN_LENGTH; ++l1)
+		for (size_t l1 = 0; l1 < MAX_RUN_LENGTH; ++l1)
 		{
 			cached_table[l1] = (len_to_len_transition_prob(transmitted_run, l1) / 
 						ndel_prob);
 		}
 		for (size_t received_run = 0; received_run < MAX_RUN_LENGTH; ++received_run)
 		{
-			for (int tot_length = transmitted_run; tot_length < MAX_RUN_LENGTH; ++tot_length)
+			for (size_t tot_length = transmitted_run; tot_length < MAX_RUN_LENGTH; ++tot_length)
 			{
 				RUN_TO_RUN_PROB_CONV[transmitted_run][received_run][tot_length] = 0.0;
 				for (size_t l1 = 1; l1 < received_run + 1; ++l1)
@@ -61,7 +61,7 @@ std::vector<CodeWord> get_all_codewords(size_t r, size_t l){
 	std::vector<CodeWord> res;
 	if (r == 1)
 	{
-		for (int i = 1; i <= l; ++i)
+		for (size_t i = 1; i <= l; ++i)
 		{
 			res.push_back(CodeWord(std::vector<Run>({Run(0, i)})));
 			res.push_back(CodeWord(std::vector<Run>({Run(1, i)})));
@@ -78,7 +78,7 @@ std::vector<CodeWord> get_all_codewords(size_t r, size_t l){
 			continue;
 		}
 		bool b = iter -> rbegin() -> value;
-		for (int i = 1; i <= l - iter->total_length; ++i)
+		for (size_t i = 1; i <= l - iter->total_length; ++i)
 		{
 			res.push_back((*iter) + Run(1 - b, i));
 		}

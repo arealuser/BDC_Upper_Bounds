@@ -100,3 +100,132 @@ std::vector<Float> compute_Pjk_col(const std::vector<CodeWord>& transmitted, con
 	}
 	return res;
 }
+
+
+std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<Float>& Q_i){
+	std::vector<std::vector<Float> > prob_table;
+
+	size_t n_I = transmitted.size();	prob_table.resize(n_I);
+	size_t n_J = received.size();		for_each(prob_table.begin(), prob_table.end(), [n_J](std::vector<Float>& row){
+											row.resize(n_J);
+	});
+
+	for (size_t i = 0; i < n_I; ++i)
+	{
+		for (size_t j = 0; j < n_J; ++j)
+		{
+			prob_table[i][j] = get_transition_prob(transmitted[i], received[j]);
+		}
+		if (not (abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10))
+		{
+			printf("%f\n", std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0));
+			printf("%f\n", prob_table[i][i]);
+			printf("%lu\n", i);
+			auto print = [](const Run& r){printf("(%lu, %d)\t", r.length, r.value);};
+			printf("Annoying codeword:\n");
+			for_each(transmitted[i].begin(), transmitted[i].end(), print);
+			printf("\n");
+			for (size_t j = 0; j < n_J; ++j)
+			{
+				if (prob_table[i][j] > 0.1)
+				{
+					printf("Accomplice (%f):\n", prob_table[i][j]);
+					for_each(transmitted[i].begin(), transmitted[i].end(), print);
+					printf("\n");
+				}
+			}
+		}
+		assert(abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10);
+		assert(abs(prob_table[i][i] - 1) < 1E-10);
+	}
+
+	std::vector<Float> denominator; denominator.resize(n_J);
+	for (size_t j = 0; j < n_J; ++j)
+	{
+		denominator[j] = 0.0;
+		for (size_t i = 0; i < n_I; ++i)
+		{
+			denominator[j] += prob_table[i][j] * Q_i[i];
+		}
+	}
+
+	std::vector<Float> log_alphas; log_alphas.resize(n_I);
+	for (size_t k = 0; k < n_I; ++k)
+	{
+		log_alphas[k] = 0.0;
+		for (size_t j = 0; j < n_J; ++j)
+		{
+			if (prob_table[k][j] < 1E-12)
+			{
+				continue;
+			}
+			if (std::isnan(denominator[j]) or denominator[j] < 1E-50)
+			{
+				denominator[j] = 1E-50;
+			}
+			log_alphas[k] += prob_table[k][j] * log(Q_i[k] * prob_table[k][j] / denominator[j]);
+		}
+	}
+
+	Float max_log_alpha = *max_element(log_alphas.begin(), log_alphas.end());
+	for_each(log_alphas.begin(), log_alphas.end(), [max_log_alpha](Float& log_alpha){
+		log_alpha = exp(log_alpha - max_log_alpha);
+	});
+
+	Float sum = std::accumulate(log_alphas.begin(), log_alphas.end(), 0.0);
+	for_each(log_alphas.begin(), log_alphas.end(), [sum](Float& alpha){
+		alpha /= sum;
+	});
+
+	return log_alphas;
+}
+
+
+
+Float compute_rate_naive(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<Float>& Q_i){
+	std::vector<std::vector<Float> > prob_table;
+
+	size_t n_I = transmitted.size();	prob_table.resize(n_I);
+	size_t n_J = received.size();		for_each(prob_table.begin(), prob_table.end(), [n_J](std::vector<Float>& row){
+											row.resize(n_J);
+	});
+
+	for (size_t i = 0; i < n_I; ++i)
+	{
+		for (size_t j = 0; j < n_J; ++j)
+		{
+			prob_table[i][j] = get_transition_prob(transmitted[i], received[j]);
+		}
+	}
+
+	std::vector<Float> denominator; denominator.resize(n_J);
+	for (size_t j = 0; j < n_J; ++j)
+	{
+		denominator[j] = 0.0;
+		for (size_t i = 0; i < n_I; ++i)
+		{
+			denominator[j] += prob_table[i][j] * Q_i[i];
+		}
+	}
+
+	Float rate = 0.0;
+	for (size_t k = 0; k < n_I; ++k)
+	{
+		for (size_t j = 0; j < n_J; ++j)
+		{
+			if (prob_table[k][j] < 1E-12)
+			{
+				continue;
+			}
+			if (std::isnan(denominator[j]) or denominator[j] < 1E-50)
+			{
+				denominator[j] = 1E-50;
+			}
+			rate += Q_i[k] * prob_table[k][j] * log(prob_table[k][j] / denominator[j]);
+		}
+	}
+
+	return rate;
+}

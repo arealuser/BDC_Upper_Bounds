@@ -10,6 +10,14 @@ std::vector<Float> do_full_baa_step(const std::vector<CodeWord>& transmitted, co
 
 
 /*
+Computes the amount of information from the given distribution on the given transmitted codewords.
+For disributing purposes it is possible to run this with only some of the codewords and then to sum over the possibilities.
+*/
+Float compute_rate(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<Float>& Q_i);
+
+
+/*
 Computes the denominator of multiple W_jk entries. 
 This is a function that depends on the transition probabilities out of all of the transmitted codewords.
 In general, when distributing, this should be called with all of the transmitted codewords and part of the received ones.
@@ -37,4 +45,17 @@ Float compute_log_alpha_k (const CodeWord& transmitted, const std::vector<CodeWo
 
 
 
+/*
+Performs a full BAA step on the given input and output alphabets, with the given initial distribution Q_i,
+	but using the naive method of computing all the entries of the P_ij table.
+*/
+std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<Float>& Q_i);
 
+
+/*
+Computes the amount of information from the given distribution on the given transmitted codewords,
+	but using the naive method of computing all the entries of the P_ij table.
+*/
+Float compute_rate_naive(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<Float>& Q_i);

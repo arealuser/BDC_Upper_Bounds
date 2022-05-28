@@ -45,6 +45,10 @@ std::vector<std::vector<Float> > compute_all_log_alpha_k_parallelized (const std
 		for (size_t i_Q = 0; i_Q < n_Q; ++i_Q)
 		{
 			Float log_Qk = log(Q_is[i_Q][i_I]);
+			if (std::isnan(log_Qk))
+			{
+				log_Qk = -700.0;
+			}
 			for (size_t i_J = 0; i_J < n_J; ++i_J)
 			{
 				Float P_jk = probs_row[i_J];
@@ -81,4 +85,39 @@ std::vector<std::vector<Float> > do_full_baa_step_parallelized(const std::vector
 			[alpha_total](Float& log_alpha){log_alpha /= alpha_total;});
 	}
 	return log_alphass;
+}
+
+
+std::vector<Float> compute_rate_parallelized(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<std::vector<Float> >& Q_is){
+	size_t n_Q = Q_is.size();
+	size_t n_I = transmitted.size();
+	size_t n_J = received.size();
+
+	std::vector<Float> res; res.resize(n_Q);
+	auto log_W_jk_den = compute_all_log_Wjk_den_parallelized(transmitted, received, Q_is);
+
+	for (size_t i_I = 0; i_I < n_I; ++i_I)
+	{
+		std::vector<Float> probs_row = compute_Pjk_row(transmitted[i_I], received);
+		std::vector<Float> log_probs_row = probs_row;
+		for_each(log_probs_row.begin(), log_probs_row.end(), [](Float& x){x = log(x);});
+		for (size_t i_Q = 0; i_Q < n_Q; ++i_Q)
+		{
+			Float Qk = Q_is[i_Q][i_I];
+			// Float log_Qk = log(Qk);
+			for (size_t i_J = 0; i_J < n_J; ++i_J)
+			{
+				Float P_jk = probs_row[i_J];
+				if (P_jk < 1E-12)
+				{
+					continue;
+				}
+				Float log_den = log_W_jk_den[i_Q][i_J];
+				Float log_P_jk = log_probs_row[i_J];
+				res[i_Q] += Qk * P_jk * (log_P_jk - log_den);
+			}
+		}
+	}
+	return res;
 }

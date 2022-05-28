@@ -22,3 +22,10 @@ Performs a full BAA step on the given input and output alphabets, with the given
 std::vector<std::vector<Float> > do_full_baa_step_parallelized(const std::vector<CodeWord>& transmitted, 
 	const std::vector<CodeWord>& received, const std::vector<std::vector<Float> >& Q_is);
 
+
+/*
+Computes the amount of information from the given distribution on the given transmitted codewords.
+For disributing purposes it is possible to run this with only some of the codewords and then to sum over the possibilities.
+*/
+std::vector<Float> compute_rate_parallelized(const std::vector<CodeWord>& transmitted, const std::vector<CodeWord>& received, 
+	const std::vector<std::vector<Float> >& Q_is);

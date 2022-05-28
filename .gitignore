@@ -1,0 +1,5 @@
+*.out.*
+a.out
+*.txt
+.*/
+workspace.code-workspace

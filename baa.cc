@@ -72,7 +72,13 @@ Float compute_log_alpha_k (const CodeWord& transmitted, const std::vector<CodeWo
 	for(auto pr_den : boost::combine(probs_row, log_W_jk_den)){
 		Float P_jk, log_den;
 		boost::tie(P_jk, log_den) = pr_den;
+		// Reduces the runtime of the algorithm by 30% with minimal change to the outcome.
+		if (P_jk < 1E-12)
+		{
+			continue;
+		}
 		log_alpha += P_jk * (log_Q_k + log(P_jk) - log_den);
+		// log_alpha += P_jk;
 	}
 	return log_alpha;
 }

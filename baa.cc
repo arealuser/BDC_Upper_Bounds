@@ -118,8 +118,21 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 		{
 			prob_table[i][j] = get_transition_prob(transmitted[i], received[j]);
 		}
+
+		if (not (std::abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10))
+		{
+			Float ps = std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0);
+			printf("Probs of %d sum up to %f (= 1 + %f) instead of 1\n", i, ps, ps - 1);
+			printf("The codeword is: \n");
+			auto print = [](const Run& r){
+				printf("(%d ^ %lu)\t", r.value, r.length);
+			};
+			for_each(transmitted[i].begin(), transmitted[i].end(), print);
+			printf("\n");
+
+		}
 		// For debugging purposes - make sure probabilities sum up to 1:
-		assert(abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10);
+		assert(std::abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10);
 	}
 
 	// In the equation for a BAA step, one has a summation / iteration over 3 indices which would result in a
@@ -133,7 +146,7 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 			denominator[j] += prob_table[i][j] * Q_i[i];
 		}
 	}
-	assert(abs(std::accumulate(denominator.begin(), denominator.end(), 0.0) - 1.0) < 1E-10);
+	assert(std::abs(std::accumulate(denominator.begin(), denominator.end(), 0.0) - 1.0) < 1E-10);
 
 	// In the BAA step, we want to compute Q_k = \alpha_k / \sum_k \alpha_k, where 
 	// 			\alpha_k = \exp {\sum_j P_{j,k} ln(\frac{Q_k P_{j,k}}{\sum_i Q_i * P_{j,i}})}
@@ -145,7 +158,7 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 		{
 			// These entries of the probability table should have a negligible effect on the resulting distribution
 			// 	(if we had infinite precision) and keeping them can cause outcomes to be nan.
-			if (prob_table[k][j] < 1E-12)
+			if (prob_table[k][j] < 1E-30)
 			{
 				continue;
 			}
@@ -169,6 +182,45 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 	for_each(log_alphas.begin(), log_alphas.end(), [sum](Float& alpha){
 		alpha /= sum;
 	});
+
+
+	Float rate = 0.0;
+	for (size_t k = 0; k < n_I; ++k)
+	{
+		for (size_t j = 0; j < n_J; ++j)
+		{
+			if (prob_table[k][j] < 1E-30)
+			{
+				continue;
+			}
+			if (std::isnan(denominator[j]) or denominator[j] < 1E-50)
+			{
+				denominator[j] = 1E-50;
+			}
+			rate += Q_i[k] * prob_table[k][j] * log(Q_i[k] * prob_table[k][j] / (denominator[j] * Q_i[k]));
+		}
+	}
+	printf("I(Q_n, W_n) = %f\n", rate);
+
+
+	rate = 0.0;
+	for (size_t k = 0; k < n_I; ++k)
+	{
+		for (size_t j = 0; j < n_J; ++j)
+		{
+			if (prob_table[k][j] < 1E-30)
+			{
+				continue;
+			}
+			if (std::isnan(denominator[j]) or denominator[j] < 1E-50)
+			{
+				denominator[j] = 1E-50;
+			}
+			rate += log_alphas[k] * prob_table[k][j] * log(Q_i[k] * prob_table[k][j] / (denominator[j] * log_alphas[k]));
+		}
+	}
+	printf("I(Q_{n+1}, W_n) = %f\n", rate);
+
 
 	// These should be the probabilities at the end of the BAA step.
 	return log_alphas;
@@ -208,7 +260,7 @@ Float compute_rate_naive(const std::vector<CodeWord>& transmitted, const std::ve
 	{
 		for (size_t j = 0; j < n_J; ++j)
 		{
-			if (prob_table[k][j] < 1E-12)
+			if (prob_table[k][j] < 1E-30)
 			{
 				continue;
 			}

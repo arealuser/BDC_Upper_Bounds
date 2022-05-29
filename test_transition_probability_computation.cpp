@@ -10,13 +10,13 @@ int main(int argc, char const *argv[])
 	// CodeWord transmitted = {Run(0, 2), Run(1, 1), Run(0, 2), Run(1, 1), Run(0, 2), Run(1, 1), Run(0, 2)};
 	// CodeWord received = {Run(0,4)};
 
-	if (argc != 2)
-	{
-		printf("Usage: %s output_file\n", argv[0]);
-		exit(1);
-	}
+	// if (argc != 2)
+	// {
+	// 	printf("Usage: %s output_file\n", argv[0]);
+	// 	exit(1);
+	// }
 
-	FILE* fout = fopen(argv[1], "w");
+	// FILE* fout = fopen(argv[1], "w");
 
 	CodeWord transmitted = std::vector<Run>({Run(0, 9), Run(1, 1), Run(0, 1)});
 	CodeWord received = std::vector<Run>({Run(0, 5)});
@@ -35,7 +35,7 @@ int main(int argc, char const *argv[])
 	auto all_codewords = get_all_codewords(2, 4);
 	printf("Got a total of %lu codewords.\n", all_codewords.size());
 
-	auto transmitted_codewords = get_all_codewords(10, 20);
+	auto transmitted_codewords = get_all_codewords(3, 40);
 	std::vector<BitCodeWord> bit_transmitted_codewords(transmitted_codewords.size());
 	auto t_iter = transmitted_codewords.begin();
 	std::generate(bit_transmitted_codewords.begin(), bit_transmitted_codewords.end(), [&](){return convert_to_bit_word(*(t_iter++));});
@@ -44,7 +44,7 @@ int main(int argc, char const *argv[])
 		assert(convert_to_run_word(bit_transmitted_codewords[i]) == transmitted_codewords[i]);
 	}
 
-	auto received_codewords = get_all_codewords(5, 5);
+	auto received_codewords = get_all_codewords(3, 20);
 	std::vector<BitCodeWord> bit_received_codewords(received_codewords.size());
 	auto r_iter = received_codewords.begin();
 	std::generate(bit_received_codewords.begin(), bit_received_codewords.end(), [&](){return convert_to_bit_word(*(r_iter++));});
@@ -78,7 +78,7 @@ int main(int argc, char const *argv[])
 
 		for (size_t ir = 0; ir < received_codewords.size(); ++ir)
 		{
-			if (abs(probs[ir] - probs2[ir]) > 1E-6)
+			if (std::abs(probs[ir] - probs2[ir]) > 1E-6)
 			{
 				printf("Transmitted Codeword:\n");
 				print_codeword(trans_iter->begin(), trans_iter->end());
@@ -130,6 +130,5 @@ int main(int argc, char const *argv[])
 	printf("This means we have 2 ** %.1f iterations per second\n", 
 		log((((Float) transmitted_codewords.size()) * (received_codewords.size())) / 
 			(((Float) (clock() - t0)) / CLOCKS_PER_SEC)) / log(2));
-	fclose(fout);
 	return 0;
 }

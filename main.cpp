@@ -52,7 +52,7 @@ int main(int argc, char const *argv[])
 	for(auto q_12 : boost::combine(Q, Q2)){
 		Float q1, q2;
 		boost::tie(q1, q2) = q_12;
-		s += abs(q1 - q2);
+		s += std::abs(q1 - q2);
 	}
 
 	printf("%f\n", s);

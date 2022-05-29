@@ -290,36 +290,36 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 						next_block_wasnt_deleted = 1 - len_to_len_transition_prob(transmitted[next_trans_index+1].length, 0);
 					}
 
-					dynamic_programming_state[rec_index+1][next_del_index] += 
-							RUN_TO_RUN_PROB_CONV[transmitted[trans_index].length][received[rec_index].length][tot_length] *
-							probability * next_block_wasnt_deleted;
+					// dynamic_programming_state[rec_index+1][next_del_index] += 
+					// 		RUN_TO_RUN_PROB_CONV[transmitted[trans_index].length][received[rec_index].length][tot_length] *
+					// 		probability * next_block_wasnt_deleted;
 
 					// We enumerate over the number of bits from the received run that came from the first block:
-					// for (size_t l1 = 1; l1 < received[rec_index].length + 1; ++l1)
-					// {
-					// 	if (verbose)
-					// 	{
-					// 		printf("Updating dynamic_programming_state[%lu][%lu] = %.3f%% + %.3f%% * %.3f%% * %.3f%% * %.3f%%\n", 
-					// 						rec_index+1, next_del_index, 100*dynamic_programming_state[rec_index+1][next_del_index],
-					// 						100*(len_to_len_transition_prob(transmitted[trans_index].length, l1) / 
-					// 							(1 - len_to_len_transition_prob(transmitted[trans_index].length, 0))), 
-					// 						100*len_to_len_transition_prob(tot_length, received[rec_index].length - l1), 
-					// 						100*probability, 100*next_block_wasnt_deleted);
-					// 		printf("%lu, %lu\n", rec_index, del_index);
-					// 	}
+					for (size_t l1 = 1; l1 < received[rec_index].length + 1; ++l1)
+					{
+						if (verbose)
+						{
+							printf("Updating dynamic_programming_state[%lu][%lu] = %.3f%% + %.3f%% * %.3f%% * %.3f%% * %.3f%%\n", 
+											rec_index+1, next_del_index, 100*dynamic_programming_state[rec_index+1][next_del_index],
+											100*(len_to_len_transition_prob(transmitted[trans_index].length, l1) / 
+												(1 - len_to_len_transition_prob(transmitted[trans_index].length, 0))), 
+											100*len_to_len_transition_prob(tot_length, received[rec_index].length - l1), 
+											100*probability, 100*next_block_wasnt_deleted);
+							printf("%lu, %lu\n", rec_index, del_index);
+						}
 
-					// 	dynamic_programming_state[rec_index+1][next_del_index] +=
-					// 		(len_to_len_transition_prob(transmitted[trans_index].length, l1) / 
-					// 			(1 - len_to_len_transition_prob(transmitted[trans_index].length, 0))) *
-					// 		len_to_len_transition_prob(tot_length, received[rec_index].length - l1) * probability *
-					// 		next_block_wasnt_deleted;
+						dynamic_programming_state[rec_index+1][next_del_index] +=
+							(len_to_len_transition_prob(transmitted[trans_index].length, l1) / 
+								(1 - len_to_len_transition_prob(transmitted[trans_index].length, 0))) *
+							len_to_len_transition_prob(tot_length, received[rec_index].length - l1) * probability *
+							next_block_wasnt_deleted;
 
-					// 	if (verbose)
-					// 	{
-					// 		printf("to %.3f%%\n", 100*dynamic_programming_state[rec_index+1][next_del_index]);
-					// 		printf("%lu, %lu\n", rec_index, del_index);
-					// 	}
-					// }
+						if (verbose)
+						{
+							printf("to %.3f%%\n", 100*dynamic_programming_state[rec_index+1][next_del_index]);
+							printf("%lu, %lu\n", rec_index, del_index);
+						}
+					}
 				}
 			}
 		}

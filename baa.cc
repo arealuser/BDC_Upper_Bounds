@@ -122,7 +122,7 @@ std::vector<Float> do_baa_step_naive(const std::vector<CodeWord>& transmitted, c
 		if (not (std::abs(std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0) - 1) < 1E-10))
 		{
 			Float ps = std::accumulate(prob_table[i].begin(), prob_table[i].end(), 0.0);
-			printf("Probs of %d sum up to %f (= 1 + %f) instead of 1\n", i, ps, ps - 1);
+			printf("Probs of %lu sum up to %f (= 1 + %f) instead of 1\n", i, ps, ps - 1);
 			printf("The codeword is: \n");
 			auto print = [](const Run& r){
 				printf("(%d ^ %lu)\t", r.value, r.length);

@@ -9,7 +9,7 @@
 #include <boost/range/combine.hpp>
 
 
-int main(int argc, char const *argv[])
+int main()
 {
 	Float deletion_probability = 0.5;
 	initialize_channel(deletion_probability);
@@ -20,7 +20,6 @@ int main(int argc, char const *argv[])
 	printf("%lu (= 2^%.1f) possible transmitted codewords\n", transmitted_codewords.size(), log(transmitted_codewords.size()) / log(2));
 	printf("%lu (= 2^%.1f) possible received codewords\n", received_codewords.size(), log(received_codewords.size()) / log(2));
 	printf("In total P_jk has 2^%.1f entries\n", (log(transmitted_codewords.size()) + log(received_codewords.size())) / log(2));
-	size_t total_length = 0;
 	auto t0 = clock();
 
 	std::vector<Float> Q;
@@ -64,18 +63,6 @@ int main(int argc, char const *argv[])
 		Float q1, q2;
 		boost::tie(q1, q2) = q_12;
 		s += std::abs(q1 - q2);
-	}
-
-	printf("TVD between implementations: %f%%\n", s * 100);
-
-	s = 0;
-	for(size_t i; i < transmitted_codewords.size(); ++i){
-		if (Q[i] >= Qs[0][i])
-		{
-			s += Q[i] - Qs[0][i];
-		}else{
-			s -= Q[i] - Qs[0][i];
-		}
 	}
 
 	printf("TVD between implementations: %f%%\n", s * 100);

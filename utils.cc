@@ -4,7 +4,7 @@
 std::vector<std::vector<Float>> load_array_from_file(FILE* in_file){
 	uint32_t shape[2];
 	assert(fread(shape, sizeof(uint32_t), 2, in_file) == 2);
-	printf("shape = %lu, %lu\n", shape[0], shape[1]);
+	printf("shape = %u, %u\n", shape[0], shape[1]);
 
 	std::vector<std::vector<Float>> res; res.resize(shape[0]);
 	for(auto riter = res.begin(); riter != res.end(); ++riter){

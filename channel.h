@@ -371,6 +371,3 @@ inline Float get_transition_prob(const CodeWord& transmitted, const CodeWord& re
 Returns a list of all the codewords with at most r runs and a total length of at most l
 */
 std::vector<CodeWord> get_all_codewords(size_t r, size_t l);
-
-
-

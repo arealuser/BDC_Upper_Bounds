@@ -7,14 +7,21 @@ MAINS = $(MAIN_SOURCES:%.cpp=%.out)
 OBJECTS = $(SOURCES:%.cc=%.o)
 
 # CC := $(shell which clang || which gcc)
-CC := g++
+CC := g++-9
 CFLAGS = -Wall -W -O3 -fno-exceptions -fno-rtti -std=c++2a
 LIBS = stdc++ m
 LDFLAGS = $(LIBS:%=-l%)
 
-all : $(OBJECTS) $(MAINS)
+bit_channel: $(OBJECTS) bit_channel_slave.out:
+	echo done
+
+all_mains : $(OBJECTS) $(MAINS)
 		echo done
 
+test: all_mains
+	./test_baa.out
+	./test_bit_baa.out
+	./test_transition_probability_computation.out
 
 %.out : %.cpp $(OBJECTS)
 		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^

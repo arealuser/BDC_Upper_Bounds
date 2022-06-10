@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cmath>
 
-int main(int argc, char const *argv[])
+int main()
 {
 	// CodeWord transmitted = {Run(0, 2), Run(1, 1), Run(0, 2), Run(1, 1), Run(0, 2), Run(1, 1), Run(0, 2)};
 	// CodeWord received = {Run(0,4)};
@@ -24,11 +24,12 @@ int main(int argc, char const *argv[])
 	Float deletion_probability = 0.9;
 
 	initialize_channel(deletion_probability);
+	initialize_bit_channel(deletion_probability, 40, 40, true);
 	printf("The probablity of going from the transmitted to the received codeword is %.4f%%.\n", 
 		100*get_transition_prob(transmitted, received));
 
 	printf("The bit_channel probablity of going from the transmitted to the received codeword is %.4f%%.\n", 
-		100*get_bit_transition_prob(convert_to_bit_word(transmitted), convert_to_bit_word(received), deletion_probability));
+		100*get_bit_transition_prob(convert_to_bit_word(transmitted), convert_to_bit_word(received)));
 	// return 0;
 
 
@@ -72,7 +73,7 @@ int main(int argc, char const *argv[])
 		auto brec_iter = bit_received_codewords.begin();
 		std::generate(probs2.begin(), probs2.end(), 
 			[&](){
-				return get_bit_transition_prob(*bit_trans_iter, *(brec_iter++), deletion_probability);
+				return get_bit_transition_prob(*bit_trans_iter, *(brec_iter++));
 		});
 
 
@@ -85,7 +86,7 @@ int main(int argc, char const *argv[])
 				printf("Received Codeword[%lu]:\n", ir);
 				print_codeword(received_codewords[ir].begin(), received_codewords[ir].end());
 				printf("prob1 = %f, prob2 = %f, diff = %f\n", probs[ir], probs2[ir], probs[ir] - probs2[ir]);
-				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], deletion_probability, true);
+				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true);
 				assert(false);
 			}
 		}

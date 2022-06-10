@@ -25,3 +25,19 @@ void write_array_to_file(FILE* out_file, const std::vector<std::vector<Float>>& 
 		assert(fwrite(iter -> data(), sizeof(Float), shape[1], out_file) == shape[1]);
 	}
 }
+
+
+std::vector<Float> load_1d_array_from_file(FILE* in_file){
+	uint32_t shape;
+	assert(fread(&shape, sizeof(uint32_t), 1, in_file) == 1);
+
+	std::vector<Float> res; res.resize(shape);
+	assert(fread(res.data(), sizeof(Float), shape, in_file) == shape);
+	return res;
+}
+
+void write_1d_array_to_file(FILE* out_file, const std::vector<Float>& array){
+	uint32_t shape = (uint32_t) array.size();
+	fwrite(&shape, sizeof(shape), 1, out_file);
+	assert(fwrite(array.data(), sizeof(Float), shape, out_file) == shape);
+}

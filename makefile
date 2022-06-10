@@ -12,7 +12,7 @@ CFLAGS = -Wall -W -O3 -fno-exceptions -fno-rtti -std=c++2a
 LIBS = stdc++ m
 LDFLAGS = $(LIBS:%=-l%)
 
-bit_channel: $(OBJECTS) bit_channel_slave.out:
+bit_channel: $(OBJECTS) all_mains
 	echo done
 
 all_mains : $(OBJECTS) $(MAINS)

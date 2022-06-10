@@ -3,6 +3,8 @@
 
 const char* GENERATE_CODEWORDS = "gen_codewords";
 const char* COMPUTE_DENOMS = "denominators";
+const char* COMPUTE_ALPHAS = "alphas";
+const char* COMPUTE_RATE = "rate";
 
 
 FILE* try_to_open_file(const char* filename, const char* mode){
@@ -19,6 +21,7 @@ void generate_codewords(bool up_to, size_t max_len, const char* output_file_name
 	auto codewords = get_all_bit_codewords(max_len, up_to);
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 	save_bit_codewords_to_file(output_file, codewords);
+	fclose(output_file);
 }
 
 void compute_denominators(const char* transmitted_codewords_filename, const char* received_codewords_filename, 
@@ -38,8 +41,44 @@ void compute_denominators(const char* transmitted_codewords_filename, const char
 
 	auto denominators = compute_all_log_Wjk_den (transmitted_codewords, received_codewords, Q);
 	write_1d_array_to_file(output_file, denominators);
-
+	fclose(output_file); fclose(transmitted_codewords_file); fclose(received_codewords_file); fclose(Q_array_file);
 }
+
+
+void compute_alphas(const char* transmitted_codewords_filename, const char* received_codewords_filename,
+	size_t start, size_t end, const char* Q_array_filename, const char* denominators_filename, 
+	size_t input_len, size_t output_len, bool up_to, Float deletion_probability, const char* output_file_name){
+
+	FILE* transmitted_codewords_file = try_to_open_file(transmitted_codewords_filename, "rb");
+	FILE* received_codewords_file = try_to_open_file(received_codewords_filename, "rb");
+	FILE* Q_array_file = try_to_open_file(Q_array_filename, "rb");
+	FILE* denominators_file = try_to_open_file(denominators_filename, "rb");
+	FILE* output_file = try_to_open_file(output_file_name, "wb");
+
+	assert(start < end);
+	auto transmitted_codewords = load_bit_codewords_from_file(transmitted_codewords_file, start, end);
+	auto received_codewords = load_bit_codewords_from_file(received_codewords_file);
+	std::vector<Float> Q;
+	Q.resize(end - start);
+	{
+		auto Q_all = load_1d_array_from_file(Q_array_file);
+		assert(Q_all.size() > end);
+		for (size_t i = 0; i < (end-start); ++i)
+		{
+			Q[i] = Q_all[start+i];
+		}
+	}
+
+	auto denominators = load_1d_array_from_file(denominators_file);
+
+	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
+
+	auto alphas = compute_all_log_alpha_k (transmitted_codewords, received_codewords, Q, denominators);
+
+	fclose(output_file); fclose(transmitted_codewords_file); fclose(received_codewords_file); 
+	fclose(Q_array_file); fclose(denominators_file);
+}
+
 
 int main(int argc, char const *argv[])
 {
@@ -85,6 +124,39 @@ int main(int argc, char const *argv[])
 
 		compute_denominators(transmitted_codewords_filename, received_codewords_filename, start, end, Q_array_filename, 
 			deletion_probability, output_file_name, input_len, output_len, up_to);
+	} else if(!strcmp(argv[1], COMPUTE_ALPHAS)){
+		if (argc != 13)
+		{
+			fprintf(stderr, 
+				"Usage %s %s transmitted_codewords_file received_codewords_file start end Q_array_file deletion_probability log_dens_file output_file input_len output_len up_to\n", 
+				argv[0], argv[1]);
+			exit(1);
+		}
+
+		const char* transmitted_codewords_filename = argv[2];
+		const char* received_codewords_filename = argv[3];
+		size_t start = atol(argv[4]);
+		size_t end = atol(argv[5]);
+		const char* Q_array_filename = argv[6];
+		Float deletion_probability = atof(argv[7]);
+		const char* log_dens_filename = argv[8];
+		const char* output_file_name = argv[9];
+		size_t input_len = atol(argv[10]);
+		size_t output_len = atol(argv[11]);
+		bool up_to = atoi(argv[12]);
+
+		compute_alphas(transmitted_codewords_filename, received_codewords_filename,
+			start, end, Q_array_filename, log_dens_filename, input_len, output_len, up_to,
+			deletion_probability, output_file_name);
+
+	} else if(!strcmp(argv[1], COMPUTE_RATE)){
+		fprintf(stderr, "This command has not yet been implemented.\n");
+		exit(3);
+	} else{
+		fprintf(stderr, "Unknown command %s.\n", argv[1]);
+		fprintf(stderr, "Try running with %s %s %s or %s instead.\n", 
+			GENERATE_CODEWORDS, COMPUTE_DENOMS, COMPUTE_ALPHAS, COMPUTE_RATE);
+		exit(3);
 	}
 	return 0;
 }

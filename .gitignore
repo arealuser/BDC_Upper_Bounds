@@ -1,6 +1,6 @@
 *.out.*
 *.out
-*.txt
+# *.txt
 .*/
 workspace.code-workspace
 *.o

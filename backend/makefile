@@ -19,8 +19,8 @@ all_mains : $(OBJECTS) $(MAINS)
 		echo done
 
 test: all_mains
-	./test_baa.out
 	./test_bit_baa.out
+	./test_baa.out
 	./test_transition_probability_computation.out
 
 %.out : %.cpp $(OBJECTS)

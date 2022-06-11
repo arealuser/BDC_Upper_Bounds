@@ -23,7 +23,6 @@ int main()
 	printf("%lu (= 2^%.1f) possible transmitted codewords\n", transmitted_codewords.size(), log(transmitted_codewords.size()) / log(2));
 	printf("%lu (= 2^%.1f) possible received codewords\n", received_codewords.size(), log(received_codewords.size()) / log(2));
 	printf("In total P_jk has 2^%.1f entries\n", (log(transmitted_codewords.size()) + log(received_codewords.size())) / log(2));
-	size_t total_length = 0;
 	auto t0 = clock();
 
 	std::vector<Float> Q;
@@ -42,6 +41,10 @@ int main()
 
 			auto rate = compute_rate(transmitted_codewords, received_codewords, Q);
 			printf("The current rate is %f\n", rate);
+			auto log_dens = compute_all_log_Wjk_den(transmitted_codewords, received_codewords, Q);
+			Float rate2 = compute_bit_rate_efficient(transmitted_codewords, received_codewords, log_dens, Q);
+			printf("Efficient rate computation: %f\n", rate2);
+			assert(std::abs(rate-rate2) < 1E-6);
 		}
 		Q = do_full_baa_step(transmitted_codewords, received_codewords, Q);
 	}

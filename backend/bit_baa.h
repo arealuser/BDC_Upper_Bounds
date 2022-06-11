@@ -12,10 +12,17 @@ std::vector<Float> do_full_baa_step(const std::vector<BitCodeWord>& transmitted,
 
 /*
 Computes the amount of information from the given distribution on the given transmitted codewords.
-For disributing purposes it is possible to run this with only some of the codewords and then to sum over the possibilities.
+This is a straightforward implementation that computes a full transition prob table and is useful only for debugging purposes.
 */
 Float compute_rate(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
 	const std::vector<Float>& Q_i);
+
+/*
+Computes the amount of information from the given distribution on the given transmitted codewords.
+For disributing purposes it is possible to run this with only some of the codewords and then to sum over the possibilities.
+*/
+Float compute_bit_rate_efficient(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+	const std::vector<Float>& log_W_jk_den, const std::vector<Float>& Q_i);
 
 
 /*

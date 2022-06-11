@@ -102,7 +102,32 @@ std::vector<Float> compute_Pjk_col(const std::vector<BitCodeWord>& transmitted, 
 }
 
 
+Float compute_bit_rate_efficient(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+	const std::vector<Float>& log_W_jk_den, const std::vector<Float>& Q_i){
+	size_t n_I = transmitted.size();
+	size_t n_J = received.size();
+	assert(transmitted.size() == Q_i.size());
+	Float rate = 0.0;
 
+	for(size_t i = 0; i < n_I; ++i){
+		auto probs_row = compute_Pjk_row(transmitted[i], received);
+		std::vector<Float> log_probs_row = probs_row;
+		for_each(log_probs_row.begin(), log_probs_row.end(), [](Float& x){x = log(x);});
+		Float Qk = Q_i[i];
+		for(size_t j = 0; j < n_J; ++j){
+			Float log_den = log_W_jk_den[j];
+			Float P_jk = probs_row[j];
+			Float log_P_jk = log_probs_row[j];
+			if (P_jk < 1E-20)
+			{
+				continue;
+			}
+			// printf("%lu\t%lu\t%.2f%%\t%.2f%%\t%.2f\t%.2f\n", i, j, 100*Qk, 100*P_jk, log_P_jk, log_den);
+			rate += Qk * P_jk * (log_P_jk - log_den);
+		}
+	}
+	return rate;
+}
 
 
 Float compute_rate(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
@@ -145,6 +170,7 @@ Float compute_rate(const std::vector<BitCodeWord>& transmitted, const std::vecto
 			{
 				denominator[j] = 1E-50;
 			}
+			// printf("%lu\t%lu\t%.2f%%\t%.2f%%\t%.2f\t%.2f\n", k, j, 100*Q_i[k], 100*prob_table[k][j], log(prob_table[k][j]), log(denominator[j]));
 			rate += Q_i[k] * prob_table[k][j] * log(prob_table[k][j] / denominator[j]);
 		}
 	}

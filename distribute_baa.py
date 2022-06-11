@@ -11,6 +11,7 @@ import communicate_with_cpp
 import backend
 
 import copy
+import logging
 
 
 @dataclass
@@ -36,6 +37,9 @@ class ExperimentDetails:
 	accuracy: float = 0.05
 	verbose: bool = False
 
+	def log_file(self):
+		return os.path.join(self.experiment_path, 'log.txt')
+
 	def trans_filename(self):
 		return os.path.join(self.experiment_path, 'transmitted.codewords')
 
@@ -51,6 +55,9 @@ class ExperimentDetails:
 	def alpha_fn(self, i: int):
 		return os.path.join(self.experiment_path, f'alpha_{i}.arr')
 
+	def rate_fn(self, i: int):
+		return os.path.join(self.experiment_path, f'rate_{i}.arr')
+
 	def log_den_all_fn(self):
 		return os.path.join(self.experiment_path, f'log_den_all.arr')
 
@@ -62,6 +69,7 @@ def prep_for_baa_run(cd: ChannelDetails, ed: ExperimentDetails):
 	"""
 	if not os.path.isdir(ed.experiment_path):
 		os.mkdir(ed.experiment_path)
+	logging.basicConfig(filename=ed.log_file(), level=logging.INFO, filemode='a', format='%(relativeCreated)6d %(threadName)s %(message)s')
 	backend.generate_codewords(False, cd.in_len, ed.trans_filename())
 	backend.generate_codewords(cd.up_to, cd.max_out_len, ed.rec_filename())
 
@@ -108,7 +116,29 @@ def do_baa_step(initial_Q: np.ndarray, cd: ChannelDetails, ed: ExperimentDetails
 	next_Q = np.exp(alphas)
 	return next_Q / np.sum(next_Q)
 
-def run_full_baa_algorithm(initial_Q: np.ndarray, cd: ChannelDetails, ed: ExperimentDetails):
+def backend_compute_rate(params):
+	return backend.compute_rate(*params)
+
+
+def compute_rate(current_Q: np.ndarray, cd: ChannelDetails, ed: ExperimentDetails):
+	"""
+	Distributes the backend to compute the log_dens and then use them to compute the rate with the distributed backend as well.
+	"""
+	communicate_with_cpp.save_1d_array(current_Q, ed.current_Q_filename())
+	log_dens = compute_log_dens(cd, ed)
+
+	jump_size = int(np.ceil(cd.input_alphabet_size() / ed.num_processors))
+	with Pool(ed.num_processors) as worker_pool:
+		rate = np.sum(worker_pool.map(backend_compute_rate, [
+									(ed.trans_filename(), ed.rec_filename(), start, start+jump_size, ed.current_Q_filename(),
+										cd.deletion_probability, ed.rate_fn(i), cd.in_len, cd.max_out_len, cd.up_to, 
+										ed.log_den_all_fn())
+									for i, start in enumerate(range(0, cd.input_alphabet_size(), jump_size))
+									]))
+	return rate
+
+
+def run_full_baa_algorithm(initial_Q: np.ndarray, cd: ChannelDetails, ed: ExperimentDetails, tqdm=lambda x: x):
 	"""
 	Runs the BAA algorithm, starting from some given initial distribution and continuing until the BAA bound
 		shows that we are at most ed.accuracy from optimal.
@@ -117,11 +147,11 @@ def run_full_baa_algorithm(initial_Q: np.ndarray, cd: ChannelDetails, ed: Experi
 	prep_for_baa_run(cd, ed)
 	current_Q = copy.copy(initial_Q)
 	t0 = time.time()
-	for i in it.count():
+	for i in tqdm(it.count()):
 		next_Q = do_baa_step(current_Q, cd, ed)
-		distance = np.max(np.log(next_Q / current_Q))
+		distance = np.max(np.log2(next_Q / current_Q))
 		if ed.verbose:
 			print(f'Iteration Index: {i},\tDistance: {distance},\tRuntime: {time.time() - t0}')
 		current_Q = next_Q
 		if distance < ed.accuracy:
-			return current_Q
+			return current_Q, distance, compute_rate(current_Q, cd, ed) / np.log(2), i

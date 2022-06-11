@@ -49,20 +49,32 @@ void compute_alphas(const char* transmitted_codewords_filename, const char* rece
 	size_t start, size_t end, const char* Q_array_filename, const char* denominators_filename, 
 	size_t input_len, size_t output_len, bool up_to, Float deletion_probability, const char* output_file_name){
 
+	// printf("transmitted_codewords_filename = %s\n", transmitted_codewords_filename);
+	// printf("received_codewords_filename = %s\n", received_codewords_filename);
+	// printf("start = %lu\n", start);
+	// printf("end = %lu\n", end);
+	// printf("Q_array_filename = %s\n", Q_array_filename);
+	// printf("denominators_filename = %s\n", denominators_filename);
+	// printf("input_len = %lu\n", input_len);
+	// printf("output_len = %lu\n", output_len);
+	// printf("up_to = %d\n", up_to);
+	// printf("deletion_probability = %f\n", deletion_probability);
+	// printf("output_file_name = %s\n", output_file_name);
+
 	FILE* transmitted_codewords_file = try_to_open_file(transmitted_codewords_filename, "rb");
 	FILE* received_codewords_file = try_to_open_file(received_codewords_filename, "rb");
 	FILE* Q_array_file = try_to_open_file(Q_array_filename, "rb");
 	FILE* denominators_file = try_to_open_file(denominators_filename, "rb");
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 
-	assert(start < end);
+	assert(start <= end);
 	auto transmitted_codewords = load_bit_codewords_from_file(transmitted_codewords_file, start, end);
 	auto received_codewords = load_bit_codewords_from_file(received_codewords_file);
 	std::vector<Float> Q;
 	Q.resize(end - start);
 	{
 		auto Q_all = load_1d_array_from_file(Q_array_file);
-		assert(Q_all.size() > end);
+		assert(Q_all.size() >= end);
 		for (size_t i = 0; i < (end-start); ++i)
 		{
 			Q[i] = Q_all[start+i];
@@ -74,6 +86,8 @@ void compute_alphas(const char* transmitted_codewords_filename, const char* rece
 	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
 
 	auto alphas = compute_all_log_alpha_k (transmitted_codewords, received_codewords, Q, denominators);
+
+	write_1d_array_to_file(output_file, alphas);
 
 	fclose(output_file); fclose(transmitted_codewords_file); fclose(received_codewords_file); 
 	fclose(Q_array_file); fclose(denominators_file);

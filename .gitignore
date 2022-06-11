@@ -5,3 +5,5 @@
 workspace.code-workspace
 *.o
 *.array
+__pycache__/
+notebooks/

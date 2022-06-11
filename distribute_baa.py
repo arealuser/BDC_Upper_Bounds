@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import os
 from multiprocessing import Pool
 import numpy as np
+import itertools as it
+import sys, os, time
 
 import communicate_with_cpp
 import backend
@@ -32,6 +34,7 @@ class ExperimentDetails:
 	num_processors: int
 	# The required accuracy of the BAA algorithm (affects the number of iterations until it is considered converged)
 	accuracy: float = 0.05
+	verbose: bool = False
 
 	def trans_filename(self):
 		return os.path.join(self.experiment_path, 'transmitted.codewords')
@@ -57,6 +60,8 @@ def prep_for_baa_run(cd: ChannelDetails, ed: ExperimentDetails):
 	"""
 	Prepares to run the requested BAA by producing the required codeword lists.
 	"""
+	if not os.path.isdir(ed.experiment_path):
+		os.mkdir(ed.experiment_path)
 	backend.generate_codewords(False, cd.in_len, ed.trans_filename())
 	backend.generate_codewords(cd.up_to, cd.max_out_len, ed.rec_filename())
 
@@ -111,9 +116,12 @@ def run_full_baa_algorithm(initial_Q: np.ndarray, cd: ChannelDetails, ed: Experi
 	"""
 	prep_for_baa_run(cd, ed)
 	current_Q = copy.copy(initial_Q)
-	while True:
+	t0 = time.time()
+	for i in it.count():
 		next_Q = do_baa_step(current_Q, cd, ed)
 		distance = np.max(np.log(next_Q / current_Q))
+		if ed.verbose:
+			print(f'Iteration Index: {i},\tDistance: {distance},\tRuntime: {time.time() - t0}')
 		current_Q = next_Q
 		if distance < ed.accuracy:
 			return current_Q

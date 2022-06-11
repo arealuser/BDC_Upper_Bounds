@@ -36,7 +36,7 @@ int main()
 	auto all_codewords = get_all_codewords(2, 4);
 	printf("Got a total of %lu codewords.\n", all_codewords.size());
 
-	auto transmitted_codewords = get_all_codewords(3, 40);
+	auto transmitted_codewords = get_all_codewords(3, 10);
 	std::vector<BitCodeWord> bit_transmitted_codewords(transmitted_codewords.size());
 	auto t_iter = transmitted_codewords.begin();
 	std::generate(bit_transmitted_codewords.begin(), bit_transmitted_codewords.end(), [&](){return convert_to_bit_word(*(t_iter++));});
@@ -45,7 +45,7 @@ int main()
 		assert(convert_to_run_word(bit_transmitted_codewords[i]) == transmitted_codewords[i]);
 	}
 
-	auto received_codewords = get_all_codewords(3, 20);
+	auto received_codewords = get_all_codewords(3, 5);
 	std::vector<BitCodeWord> bit_received_codewords(received_codewords.size());
 	auto r_iter = received_codewords.begin();
 	std::generate(bit_received_codewords.begin(), bit_received_codewords.end(), [&](){return convert_to_bit_word(*(r_iter++));});
@@ -63,7 +63,7 @@ int main()
 
 	auto bit_trans_iter = bit_transmitted_codewords.begin();
 	for(auto trans_iter = transmitted_codewords.begin(); trans_iter != transmitted_codewords.end(); ++trans_iter){
-		std::vector<Float> probs(received_codewords.size()), probs2(received_codewords.size()), cumsum(received_codewords.size());
+		std::vector<Float> probs(received_codewords.size()), probs2(received_codewords.size()), probs3(received_codewords.size()), cumsum(received_codewords.size());
 		auto rec_iter = received_codewords.begin();
 		std::generate(probs.begin(), probs.end(), 
 			[&](){
@@ -73,7 +73,13 @@ int main()
 		auto brec_iter = bit_received_codewords.begin();
 		std::generate(probs2.begin(), probs2.end(), 
 			[&](){
-				return get_bit_transition_prob(*bit_trans_iter, *(brec_iter++));
+				return get_bit_transition_prob(*bit_trans_iter, *(brec_iter++), false, false);
+		});
+
+		brec_iter = bit_received_codewords.begin();
+		std::generate(probs3.begin(), probs3.end(), 
+			[&](){
+				return get_bit_transition_prob(*bit_trans_iter, *(brec_iter++), false, true);
 		});
 
 
@@ -86,7 +92,23 @@ int main()
 				printf("Received Codeword[%lu]:\n", ir);
 				print_codeword(received_codewords[ir].begin(), received_codewords[ir].end());
 				printf("prob1 = %f, prob2 = %f, diff = %f\n", probs[ir], probs2[ir], probs[ir] - probs2[ir]);
-				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true);
+				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true, false);
+				assert(false);
+			}
+		}
+
+		for (size_t ir = 0; ir < received_codewords.size(); ++ir)
+		{
+			if (std::abs(probs2[ir] - probs3[ir]) > 1E-6)
+			{
+				printf("Inequality of cached probablity...\n");
+				printf("Transmitted Codeword:\n");
+				print_codeword(trans_iter->begin(), trans_iter->end());
+				printf("Received Codeword[%lu]:\n", ir);
+				print_codeword(received_codewords[ir].begin(), received_codewords[ir].end());
+				printf("prob1 = %f, prob2 = %f, diff = %f\n", probs2[ir], probs3[ir], probs2[ir] - probs3[ir]);
+				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true, false);
+				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true, true);
 				assert(false);
 			}
 		}

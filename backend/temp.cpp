@@ -1,10 +1,10 @@
-#include <vector>
-#include <cstdio>
-#include <numeric>
-#include <ctime>
-#include "utils.h"
-#include <iostream>
-#include <algorithm>
+// #include <vector>
+// #include <cstdio>
+// #include <numeric>
+// #include <ctime>
+// // #include "utils.h"
+// // #include <iostream>
+// #include <algorithm>
 
 // class foo: public std::vector<int>{
 // public:
@@ -24,21 +24,24 @@ struct Sum
 int main(int argc, char const *argv[])
 {
 
-    if (argc > 1)
-    {
-        FILE* in_file = fopen(argv[1], "r");
-        auto arr = load_array_from_file(in_file);
-        printf("array shape = (%lu, %lu)\n", arr.size(), arr[0].size());
-        printf("arr =\n");
-        auto print = [](const Float& n) { std::cout << " " << n; };
-        auto print_vec = [print](const std::vector<Float>& v) { std::for_each(v.begin(), v.end(), print); std::cout << std::endl;};
-        std::for_each(arr.begin(), arr.end(), print_vec);
-        if (argc > 2)
-        {
-            FILE* out_file = fopen(argv[2], "w");
-            write_array_to_file(out_file, arr);
-        }
-    }
+    // std::array<std::array<int, 2>, 2> a = {1, 2, 3, 4};
+    // printf("%d\n", a[1][1]);
+
+    // if (argc > 1)
+    // {
+    //     FILE* in_file = fopen(argv[1], "r");
+    //     auto arr = load_array_from_file(in_file);
+    //     printf("array shape = (%lu, %lu)\n", arr.size(), arr[0].size());
+    //     printf("arr =\n");
+    //     auto print = [](const Float& n) { std::cout << " " << n; };
+    //     auto print_vec = [print](const std::vector<Float>& v) { std::for_each(v.begin(), v.end(), print); std::cout << std::endl;};
+    //     std::for_each(arr.begin(), arr.end(), print_vec);
+    //     if (argc > 2)
+    //     {
+    //         FILE* out_file = fopen(argv[2], "w");
+    //         write_array_to_file(out_file, arr);
+    //     }
+    // }
     
 
     // auto t1 = clock();
@@ -57,24 +60,24 @@ int main(int argc, char const *argv[])
     // 	printf("%d\n", num);
     // }
  
-    std::vector<int> nums{3, 4, 2, 8, 15, 267};
-    std::vector<int> nums2 = nums;
+    // std::vector<int> nums{3, 4, 2, 8, 15, 267};
+    // std::vector<int> nums2 = nums;
 
-    auto print = [](const int& n) { std::cout << " " << n; };
+    // auto print = [](const int& n) { std::cout << " " << n; };
  
-    std::cout << "before:";
-    std::for_each(nums.cbegin(), nums.cend(), print);
-    std::cout << '\n';
+    // std::cout << "before:";
+    // std::for_each(nums.cbegin(), nums.cend(), print);
+    // std::cout << '\n';
  
-    std::for_each(nums.begin(), nums.end(), [](int &n){ n++; });
+    // std::for_each(nums.begin(), nums.end(), [](int &n){ n++; });
  
-    // calls Sum::operator() for each number
-    Sum s = std::for_each(nums.begin(), nums.end(), Sum());
+    // // calls Sum::operator() for each number
+    // Sum s = std::for_each(nums.begin(), nums.end(), Sum());
  
-    std::cout << "after: ";
-    std::for_each(nums.cbegin(), nums.cend(), print);
-    std::cout << '\n';
-    std::cout << "sum: " << s.sum << '\n';
+    // std::cout << "after: ";
+    // std::for_each(nums.cbegin(), nums.cend(), print);
+    // std::cout << '\n';
+    // std::cout << "sum: " << s.sum << '\n';
 }
 
 // int main(int argc, char const *argv[])

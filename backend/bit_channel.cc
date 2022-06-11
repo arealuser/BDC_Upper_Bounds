@@ -1,4 +1,5 @@
 #include "bit_channel.h"
+#include "transition_counts/cached_transition_count.h"
 #include <cmath>
 
 
@@ -39,7 +40,7 @@ void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, 
 		
 }
 
-Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose){
+size_t get_num_transition_possibilities(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose){
 	size_t st = transmitted.size() + 1;
 	size_t sr = recieved.size() + 1;
 
@@ -70,10 +71,27 @@ Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord&
 			}
 		}
 	}
+	return dynamic_programming_state[(sr * st) - 1];
+}
+
+
+Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose, bool use_cache){
+	size_t st = transmitted.size() + 1;
+	size_t sr = recieved.size() + 1;
 
 	Float base_prob = _normalization_factors[st - 1][sr - 1];
 	
-	size_t count = dynamic_programming_state[(sr * st) - 1];
+	size_t count;
+	if (verbose)
+	{
+		printf("use_cache=%d\n", use_cache);
+	}
+	if (use_cache)
+	{
+		count = get_num_transition_possibilities_using_cache(transmitted, recieved, verbose);
+	} else {
+		count = get_num_transition_possibilities(transmitted, recieved, verbose);
+	}
 	if (verbose)
 	{
 		printf("%lu, %lu\n", transmitted.size(), recieved.size());
@@ -205,6 +223,73 @@ std::vector<BitCodeWord> load_bit_codewords_from_file(FILE* in_file, size_t from
 		{
 			res.push_back(num_to_btc(buffer[(2*i)+1], buffer[(2*i)]));
 		}
+	}
+	return res;
+}
+
+
+uint64_t btc_to_idx(const BitCodeWord& codeword){
+	return num_to_idx(btc_to_num(codeword), codeword.size());
+}
+uint64_t num_to_idx(uint64_t num, size_t len){
+	return num ^ (1ULL << len);
+}
+
+
+
+
+size_t get_num_transition_possibilities_using_cache(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose){
+	size_t n = transmitted.size();
+	size_t k = recieved.size();
+	size_t n1 = (n+1) / 2;
+	size_t n2 = n - n1;
+	size_t total = 0;
+	size_t trans_num1 = btc_to_num(transmitted.begin(), transmitted.begin() + n1);
+	size_t trans_num2 = btc_to_num(transmitted.begin() + n1, transmitted.end());
+	for (size_t i = 0; i <= k; ++i)
+	{
+		size_t k1 = i;
+		size_t k2 = k - i;
+		if ((k1 > n1) or (k2 > n2))
+		{
+			if (verbose)
+			{
+				printf("Skipping n1=%lu\tk1=%lu\tn2=%lu\tk2=%lu\n", n1, k1, n2, k2);
+			}
+			continue;
+		}
+		size_t rec_num1 = btc_to_num(recieved.begin(), recieved.begin() + k1);
+		size_t rec_num2 = btc_to_num(recieved.begin() + k1, recieved.end());
+		if (verbose)
+		{
+			printf("n1=%lu\t k1=%lu\t n2=%lu\t k2=%lu\t trans_num1=%lu\t trans_num2=%lu\t rec_num1=%lu\t rec_num2=%lu\n", n1, k1, n2, k2,
+				trans_num1, trans_num2, rec_num1, rec_num2);
+			fflush(stdout);
+		}
+		size_t count1 = get_transition_count_cache(n1, trans_num1, k1, rec_num1);
+		size_t count2 = get_transition_count_cache(n2, trans_num2, k2, rec_num2);
+		total += count1*count2;
+		if (verbose)
+		{
+			printf("n=%lu\tk=%lu\tcount1=%lu\tcount2=%lutotal=%lu\n", n, k, count1, count2, total);
+		}
+	}
+
+	return total;
+}
+
+
+
+template <typename _InputIter>
+uint64_t btc_to_num(_InputIter first, _InputIter last){
+	if (first == last)
+	{
+		return 0;
+	}
+	size_t res = 0;
+	for(; first != last; ++first){
+		res <<= 1;
+		res ^= *first;
 	}
 	return res;
 }

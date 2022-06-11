@@ -41,3 +41,14 @@ void write_1d_array_to_file(FILE* out_file, const std::vector<Float>& array){
 	fwrite(&shape, sizeof(shape), 1, out_file);
 	assert(fwrite(array.data(), sizeof(Float), shape, out_file) == shape);
 }
+
+
+FILE* try_to_open_file(const char* filename, const char* mode){
+	FILE* fptr = fopen(filename, mode);
+	if (fptr == NULL)
+	{
+		fprintf(stderr, "Error: failed to open file %s.\n", filename);
+		exit(2);
+	}
+	return fptr;
+}

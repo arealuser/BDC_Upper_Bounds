@@ -6,17 +6,6 @@ const char* COMPUTE_DENOMS = "denominators";
 const char* COMPUTE_ALPHAS = "alphas";
 const char* COMPUTE_RATE = "rate";
 
-
-FILE* try_to_open_file(const char* filename, const char* mode){
-	FILE* fptr = fopen(filename, mode);
-	if (fptr == NULL)
-	{
-		fprintf(stderr, "Error: failed to open file %s.\n", filename);
-		exit(2);
-	}
-	return fptr;
-}
-
 void generate_codewords(bool up_to, size_t max_len, const char* output_file_name){
 	auto codewords = get_all_bit_codewords(max_len, up_to);
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
@@ -48,18 +37,6 @@ void compute_denominators(const char* transmitted_codewords_filename, const char
 void compute_alphas(const char* transmitted_codewords_filename, const char* received_codewords_filename,
 	size_t start, size_t end, const char* Q_array_filename, const char* denominators_filename, 
 	size_t input_len, size_t output_len, bool up_to, Float deletion_probability, const char* output_file_name){
-
-	// printf("transmitted_codewords_filename = %s\n", transmitted_codewords_filename);
-	// printf("received_codewords_filename = %s\n", received_codewords_filename);
-	// printf("start = %lu\n", start);
-	// printf("end = %lu\n", end);
-	// printf("Q_array_filename = %s\n", Q_array_filename);
-	// printf("denominators_filename = %s\n", denominators_filename);
-	// printf("input_len = %lu\n", input_len);
-	// printf("output_len = %lu\n", output_len);
-	// printf("up_to = %d\n", up_to);
-	// printf("deletion_probability = %f\n", deletion_probability);
-	// printf("output_file_name = %s\n", output_file_name);
 
 	FILE* transmitted_codewords_file = try_to_open_file(transmitted_codewords_filename, "rb");
 	FILE* received_codewords_file = try_to_open_file(received_codewords_filename, "rb");
@@ -103,7 +80,6 @@ void compute_rate(const char* transmitted_codewords_filename, const char* receiv
 	FILE* denominators_file = try_to_open_file(denominators_filename, "rb");
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 
-	// printf("Loading data from files...\n");
 	assert(start <= end);
 	auto transmitted_codewords = load_bit_codewords_from_file(transmitted_codewords_file, start, end);
 	auto received_codewords = load_bit_codewords_from_file(received_codewords_file);
@@ -118,20 +94,14 @@ void compute_rate(const char* transmitted_codewords_filename, const char* receiv
 		}
 	}
 
-	// printf("%lu, %lu, %lu, %lu\n", transmitted_codewords.size(), Q.size(), start, end);
-
 	auto denominators = load_1d_array_from_file(denominators_file);
 
 	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
 
-	// printf("Computing the rate...\n");
 	Float rate = compute_bit_rate_efficient(transmitted_codewords, received_codewords, denominators, Q);
-	// printf("Computed the rate %.1f\n", rate);
 	std::vector<Float> rate_as_array = {rate};
 
-	// printf("Saving rate to file...\n");
 	write_1d_array_to_file(output_file, rate_as_array);
-	// printf("Done\n");
 
 	fclose(output_file); fclose(transmitted_codewords_file); fclose(received_codewords_file); 
 	fclose(Q_array_file); fclose(denominators_file);
@@ -228,8 +198,6 @@ int main(int argc, char const *argv[])
 		size_t input_len = atol(argv[10]);
 		size_t output_len = atol(argv[11]);
 		bool up_to = atoi(argv[12]);
-
-		printf("Calling compute_rate.\n");
 
 		compute_rate(transmitted_codewords_filename, received_codewords_filename,
 			start, end, Q_array_filename, log_dens_filename, input_len, output_len, up_to,

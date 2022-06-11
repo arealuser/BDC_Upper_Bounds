@@ -8,7 +8,26 @@ typedef std::vector<uint8_t> BitCodeWord;
 Uses the dynamic programming algorithm to determine the probability that the transmitted code-word will
 	be transformed into the recieved one by a deletion channel with deletion probability deletion_prob.
 */
-Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose=false);
+Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose=false,
+	bool use_cache=false);
+
+
+/*
+Uses the dynamic programming algorithm to determine the number of ways the transmitted codeword could have been transformed
+	into the received one. By multiplying the result of this function with the correct normalization factor (which depends
+	only on the lengths of the transmitted and received codewords), on can compute the transition probability.
+This function is also used to produce a cached version of the results which allows us to compute the transition probability
+	very quickly.
+*/
+size_t get_num_transition_possibilities(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose=false);
+
+
+/*
+Uses the cached values of the transition counts (as produced by get_num_transition_possibilities)
+	on halves of transmitted codewords in order to quickly compute the transition count on whole codewords.
+*/
+
+size_t get_num_transition_possibilities_using_cache(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose=false);
 
 /*
 Converts a BitCodeWord into a normal CodeWord
@@ -25,8 +44,14 @@ std::vector<BitCodeWord> get_all_bit_codewords(size_t len, bool up_to=false);
 
 void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to);
 
+template <typename _InputIter>
+uint64_t btc_to_num(_InputIter first, _InputIter last);
+
 uint64_t btc_to_num(const BitCodeWord& codeword);
 BitCodeWord num_to_btc(uint64_t num, size_t len);
+
+uint64_t btc_to_idx(const BitCodeWord& codeword);
+uint64_t num_to_idx(uint64_t num, size_t len);
 
 
 /*

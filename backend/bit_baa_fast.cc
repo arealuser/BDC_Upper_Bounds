@@ -102,7 +102,7 @@ std::vector<Float> compute_Pjk_col(const std::vector<EfficientBitCodeWord>& tran
 }
 
 
-Float compute_bit_rate_efficient_fast(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
+Float compute_bit_rate_efficient(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& log_W_jk_den, const std::vector<Float>& Q_i){
 	size_t n_I = transmitted.size();
 	size_t n_J = received.size();

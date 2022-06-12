@@ -6,7 +6,8 @@
 /*
 Performs a full BAA step on the given input and output alphabets, with the given initial distribution Q_i.
 */
-std::vector<Float> do_full_baa_step(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
+std::vector<Float> do_full_baa_step(const std::vector<EfficientBitCodeWord>& transmitted, 
+	const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& Q_i);
 
 
@@ -21,7 +22,7 @@ Float compute_rate(const std::vector<EfficientBitCodeWord>& transmitted, const s
 Computes the amount of information from the given distribution on the given transmitted codewords.
 For disributing purposes it is possible to run this with only some of the codewords and then to sum over the possibilities.
 */
-Float compute_bit_rate_efficient_fast(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
+Float compute_bit_rate_efficient(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& log_W_jk_den, const std::vector<Float>& Q_i);
 
 

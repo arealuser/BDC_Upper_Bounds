@@ -99,7 +99,7 @@ void compute_rate(const char* transmitted_codewords_filename, const char* receiv
 
 	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
 
-	Float rate = compute_bit_rate_efficient_fast(transmitted_codewords, received_codewords, denominators, Q);
+	Float rate = compute_bit_rate_efficient(transmitted_codewords, received_codewords, denominators, Q);
 	std::vector<Float> rate_as_array = {rate};
 
 	write_1d_array_to_file(output_file, rate_as_array);

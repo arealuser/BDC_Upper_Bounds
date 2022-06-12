@@ -86,3 +86,5 @@ Otherwise the entire array is loaded.
 */
 std::vector<BitCodeWord> load_bit_codewords_from_file(FILE* in_file, size_t from = 0, size_t to = -1);
 std::vector<EfficientBitCodeWord> load_bit_codewords_from_file_fast(FILE* in_file, size_t from = 0, size_t to = -1);
+
+#include "bit_channel.inl"

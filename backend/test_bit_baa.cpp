@@ -1,5 +1,6 @@
 #include "channel.h"
 #include "bit_channel.h"
+#include "bit_baa_fast.h"
 #include "parallelized_baa.h"
 #include "bit_baa.h"
 #include <algorithm>
@@ -13,12 +14,15 @@ int main()
 {
 	Float deletion_probability = 0.5;
 	initialize_channel(deletion_probability);
-	constexpr size_t in_len = 10;
-	constexpr size_t out_len = 5;
+	constexpr size_t in_len = 11;
+	constexpr size_t out_len = 9;
 	initialize_bit_channel(deletion_probability, in_len, out_len, false);
 
 	auto transmitted_codewords = get_all_bit_codewords(in_len);
 	auto received_codewords = get_all_bit_codewords(out_len);
+
+	std::vector<EfficientBitCodeWord> transmitted_codewords_efficient(transmitted_codewords.begin(), transmitted_codewords.end());
+	std::vector<EfficientBitCodeWord> received_codewords_efficient(received_codewords.begin(), received_codewords.end());
 
 	printf("%lu (= 2^%.1f) possible transmitted codewords\n", transmitted_codewords.size(), log(transmitted_codewords.size()) / log(2));
 	printf("%lu (= 2^%.1f) possible received codewords\n", received_codewords.size(), log(received_codewords.size()) / log(2));
@@ -32,6 +36,7 @@ int main()
 
 	for (int i = 0; i < 101; ++i)
 	{
+		// printf("%d\n", i);
 		if (i % 20 == 0)
 		{
 			printf("Running the %dth step of the BAA algorithm (%.2f seconds)...\n", i+1, ((float) (clock() - t0)) / CLOCKS_PER_SEC);
@@ -39,14 +44,14 @@ int main()
 			printf("min prob = %.2f%%\t", 100 * (*std::min_element(Q.begin(), Q.end())));
 			printf("max prob = %.2f%%\n", 100 * (*std::max_element(Q.begin(), Q.end())));
 
-			auto rate = compute_rate(transmitted_codewords, received_codewords, Q);
-			printf("The current rate is %f\n", rate);
-			auto log_dens = compute_all_log_Wjk_den(transmitted_codewords, received_codewords, Q);
-			Float rate2 = compute_bit_rate_efficient(transmitted_codewords, received_codewords, log_dens, Q);
+			// auto rate = compute_rate(transmitted_codewords_efficient, received_codewords_efficient, Q);
+			// printf("The current rate is %f\n", rate);
+			auto log_dens = compute_all_log_Wjk_den(transmitted_codewords_efficient, received_codewords_efficient, Q);
+			Float rate2 = compute_bit_rate_efficient(transmitted_codewords_efficient, received_codewords_efficient, log_dens, Q);
 			printf("Efficient rate computation: %f\n", rate2);
-			assert(std::abs(rate-rate2) < 1E-6);
+			// assert(std::abs(rate-rate2) < 1E-6);
 		}
-		Q = do_full_baa_step(transmitted_codewords, received_codewords, Q);
+		Q = do_full_baa_step(transmitted_codewords_efficient, received_codewords_efficient, Q);
 	}
 
 		

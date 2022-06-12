@@ -4,12 +4,46 @@
 
 typedef std::vector<uint8_t> BitCodeWord;
 
+
+void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to);
+
+template <typename _InputIter>
+uint64_t btc_to_num(_InputIter first, _InputIter last);
+
+uint64_t btc_to_num(const BitCodeWord& codeword);
+BitCodeWord num_to_btc(uint64_t num, size_t len);
+
+uint64_t btc_to_idx(const BitCodeWord& codeword);
+uint64_t num_to_idx(uint64_t num, size_t len);
+
+/*
+Converts a BitCodeWord into a normal CodeWord
+*/
+CodeWord convert_to_run_word(const BitCodeWord& bit_code);
+
+/*
+Converts a CodeWord into a BitCodeWord.
+*/
+BitCodeWord convert_to_bit_word(const CodeWord& run_word);
+
+
+struct EfficientBitCodeWord
+{
+	uint64_t num;
+	size_t len;
+	inline EfficientBitCodeWord(uint64_t n, size_t l) : num(n), len(l) {}
+	inline EfficientBitCodeWord(const BitCodeWord& word) : num(btc_to_num(word)), len(word.size()) {}
+	inline EfficientBitCodeWord(const CodeWord& word) : num(btc_to_num(convert_to_bit_word(word))), len(word.total_length) {}
+};
+
 /*
 Uses the dynamic programming algorithm to determine the probability that the transmitted code-word will
 	be transformed into the recieved one by a deletion channel with deletion probability deletion_prob.
 */
 Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose=false,
 	bool use_cache=false);
+
+Float get_bit_transition_prob_fast(const EfficientBitCodeWord& transmitted, const EfficientBitCodeWord& recieved, bool verbose=false);
 
 
 /*
@@ -28,30 +62,14 @@ Uses the cached values of the transition counts (as produced by get_num_transiti
 */
 
 size_t get_num_transition_possibilities_using_cache(const BitCodeWord& transmitted, const BitCodeWord& recieved, bool verbose=false);
+size_t get_num_transition_possibilities_using_cache_fast(const EfficientBitCodeWord& transmitted, const EfficientBitCodeWord& recieved, bool verbose=false);
 
-/*
-Converts a BitCodeWord into a normal CodeWord
-*/
-CodeWord convert_to_run_word(const BitCodeWord& bit_code);
 
-/*
-Converts a CodeWord into a BitCodeWord.
-*/
-BitCodeWord convert_to_bit_word(const CodeWord& run_word);
 
 
 std::vector<BitCodeWord> get_all_bit_codewords(size_t len, bool up_to=false);
 
-void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to);
 
-template <typename _InputIter>
-uint64_t btc_to_num(_InputIter first, _InputIter last);
-
-uint64_t btc_to_num(const BitCodeWord& codeword);
-BitCodeWord num_to_btc(uint64_t num, size_t len);
-
-uint64_t btc_to_idx(const BitCodeWord& codeword);
-uint64_t num_to_idx(uint64_t num, size_t len);
 
 
 /*
@@ -67,3 +85,4 @@ If a range of values is specified then only these values are loaded from the arr
 Otherwise the entire array is loaded.
 */
 std::vector<BitCodeWord> load_bit_codewords_from_file(FILE* in_file, size_t from = 0, size_t to = -1);
+std::vector<EfficientBitCodeWord> load_bit_codewords_from_file_fast(FILE* in_file, size_t from = 0, size_t to = -1);

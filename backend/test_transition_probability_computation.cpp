@@ -63,7 +63,7 @@ int main()
 
 	auto bit_trans_iter = bit_transmitted_codewords.begin();
 	for(auto trans_iter = transmitted_codewords.begin(); trans_iter != transmitted_codewords.end(); ++trans_iter){
-		std::vector<Float> probs(received_codewords.size()), probs2(received_codewords.size()), probs3(received_codewords.size()), cumsum(received_codewords.size());
+		std::vector<Float> probs(received_codewords.size()), probs2(received_codewords.size()), probs3(received_codewords.size()), probs4(received_codewords.size()), cumsum(received_codewords.size());
 		auto rec_iter = received_codewords.begin();
 		std::generate(probs.begin(), probs.end(), 
 			[&](){
@@ -80,6 +80,12 @@ int main()
 		std::generate(probs3.begin(), probs3.end(), 
 			[&](){
 				return get_bit_transition_prob(*bit_trans_iter, *(brec_iter++), false, true);
+		});
+
+		brec_iter = bit_received_codewords.begin();
+		std::generate(probs4.begin(), probs4.end(), 
+			[&](){
+				return get_bit_transition_prob_fast(*bit_trans_iter, *(brec_iter++), false);
 		});
 
 
@@ -99,7 +105,7 @@ int main()
 
 		for (size_t ir = 0; ir < received_codewords.size(); ++ir)
 		{
-			if (std::abs(probs2[ir] - probs3[ir]) > 1E-6)
+			if (std::abs(probs[ir] - probs3[ir]) > 1E-6)
 			{
 				printf("Inequality of cached probablity...\n");
 				printf("Transmitted Codeword:\n");
@@ -109,6 +115,22 @@ int main()
 				printf("prob1 = %f, prob2 = %f, diff = %f\n", probs2[ir], probs3[ir], probs2[ir] - probs3[ir]);
 				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true, false);
 				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true, true);
+				assert(false);
+			}
+		}
+
+		for (size_t ir = 0; ir < received_codewords.size(); ++ir)
+		{
+			if (std::abs(probs[ir] - probs4[ir]) > 1E-6)
+			{
+				printf("Inequality of cached probablity...\n");
+				printf("Transmitted Codeword:\n");
+				print_codeword(trans_iter->begin(), trans_iter->end());
+				printf("Received Codeword[%lu]:\n", ir);
+				print_codeword(received_codewords[ir].begin(), received_codewords[ir].end());
+				printf("prob1 = %f, prob2 = %f, diff = %f\n", probs[ir], probs4[ir], probs[ir] - probs4[ir]);
+				get_bit_transition_prob(*bit_trans_iter, bit_received_codewords[ir], true, true);
+				get_bit_transition_prob_fast(*bit_trans_iter, bit_received_codewords[ir], true);
 				assert(false);
 			}
 		}

@@ -115,6 +115,27 @@ Float get_bit_transition_prob(const BitCodeWord& transmitted, const BitCodeWord&
 }
 
 
+Float get_bit_transition_prob_fast(const EfficientBitCodeWord& transmitted, const EfficientBitCodeWord& recieved, bool verbose){
+	size_t st = transmitted.len + 1;
+	size_t sr = recieved.len + 1;
+
+	Float base_prob = _normalization_factors[st - 1][sr - 1];
+	
+	size_t count;
+	count = get_num_transition_possibilities_using_cache_fast(transmitted, recieved, verbose);
+	if (verbose)
+	{
+		printf("%lu, %lu\n", transmitted.len, recieved.len);
+		printf("transmitted = %016lx\n", num_to_idx(transmitted.num, transmitted.len));
+
+		printf("recieved = %016lx\n", num_to_idx(recieved.num, recieved.len));
+		printf("base_prob = %f, count = %lu, final_prob = %f\n", 
+			base_prob, count, count * base_prob);
+	}
+	return base_prob * count;
+}
+
+
 CodeWord convert_to_run_word(const BitCodeWord& bit_code){
 	std::vector<Run> res;
 	if (bit_code.size() == 0)
@@ -228,6 +249,24 @@ std::vector<BitCodeWord> load_bit_codewords_from_file(FILE* in_file, size_t from
 }
 
 
+
+std::vector<EfficientBitCodeWord> load_bit_codewords_from_file_fast(FILE* in_file, size_t from, size_t to){
+	constexpr size_t buff_size = 128;
+	uint64_t buffer[2*buff_size];
+	std::vector<EfficientBitCodeWord> res;
+	size_t num_read, total_read = 0;
+	fseek(in_file, 2*sizeof(uint64_t)*from, SEEK_CUR);
+	while(num_read = fread(buffer, 2*sizeof(uint64_t), std::min(buff_size, (to - from - total_read)), in_file)){
+		total_read += num_read;
+		for (size_t i = 0; i < num_read; ++i)
+		{
+			res.push_back(EfficientBitCodeWord(buffer[(2*i)+1], buffer[(2*i)]));
+		}
+	}
+	return res;
+}
+
+
 uint64_t btc_to_idx(const BitCodeWord& codeword){
 	return num_to_idx(btc_to_num(codeword), codeword.size());
 }
@@ -272,6 +311,46 @@ size_t get_num_transition_possibilities_using_cache(const BitCodeWord& transmitt
 		if (verbose)
 		{
 			printf("n=%lu\tk=%lu\tcount1=%lu\tcount2=%lutotal=%lu\n", n, k, count1, count2, total);
+		}
+	}
+
+	return total;
+}
+
+size_t get_num_transition_possibilities_using_cache_fast(const EfficientBitCodeWord& transmitted, const EfficientBitCodeWord& recieved, bool verbose){
+	size_t n = transmitted.len;
+	size_t k = recieved.len;
+	size_t n1 = (n+1) / 2;
+	size_t n2 = n - n1;
+	size_t total = 0;
+	size_t trans_num1 = transmitted.num >> n2;
+	size_t trans_num2 = transmitted.num  & ((1 << n2) - 1);
+	for (size_t i = 0; i <= k; ++i)
+	{
+		size_t k1 = i;
+		size_t k2 = k - i;
+		if ((k1 > n1) or (k2 > n2))
+		{
+			if (verbose)
+			{
+				printf("Skipping n1=%lu\tk1=%lu\tn2=%lu\tk2=%lu\n", n1, k1, n2, k2);
+			}
+			continue;
+		}
+		size_t rec_num1 = recieved.num >> k2;
+		size_t rec_num2 = recieved.num & ((1 << k2) - 1);
+		if (verbose)
+		{
+			printf("n1=%lu\t k1=%lu\t n2=%lu\t k2=%lu\t trans_num1=%lu\t trans_num2=%lu\t rec_num1=%lu\t rec_num2=%lu\n", n1, k1, n2, k2,
+				trans_num1, trans_num2, rec_num1, rec_num2);
+			fflush(stdout);
+		}
+		size_t count1 = get_transition_count_cache(n1, trans_num1, k1, rec_num1);
+		size_t count2 = get_transition_count_cache(n2, trans_num2, k2, rec_num2);
+		total += count1*count2;
+		if (verbose)
+		{
+			printf("count1=%lu\tcount2=%lu\ttotal=%lu\n", count1, count2, total);
 		}
 	}
 

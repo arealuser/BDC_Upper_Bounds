@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import sys
 
 GENERATE_TABLE = './backend/generate_bit_transition_cache.out'
 path = './backend/transition_counts'
@@ -19,10 +20,17 @@ cc_includes = []
 
 func = 'inline size_t get_transition_count_cache(size_t n, size_t trans_num, size_t k, size_t rec_num){\n\tswitch(n){\n'
 
-for n in range(15):
+limit = 30
+k_limit = 10
+if(len(sys.argv) > 1):
+	limit = int(sys.argv[1])
+if(len(sys.argv) > 2):
+	k_limit = int(sys.argv[2])
+
+for n in range(limit):
 	func += switch_k_template % n
-	for k in range(15):
-		if n+k > 25:
+	for k in range(k_limit):
+		if (2*n)+k > limit:
 			continue
 		print(' '.join([GENERATE_TABLE, str(n), str(k), os.path.join(path, source_template % (n, k)), 
 			os.path.join(path, header_template % (n, k)), header_template % (n, k)]))

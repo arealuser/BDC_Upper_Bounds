@@ -12,7 +12,7 @@ OBJECTS = $(SOURCES:%.cc=%.o)
 
 # CC := $(shell which clang || which gcc)
 CC := g++-9
-CFLAGS = -Wall -W -O3 -fno-exceptions -fno-rtti -std=c++2a -g -fsanitize=address
+CFLAGS = -Wall -W -O3 -fno-exceptions -fno-rtti -std=c++2a -g
 LIBS = stdc++ m
 LDFLAGS = $(LIBS:%=-l%)
 

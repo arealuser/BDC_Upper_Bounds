@@ -1,4 +1,4 @@
-#include "bit_baa.h"
+#include "bit_baa_fast.h"
 #include <algorithm>
 #include <boost/range/combine.hpp>
 #include <cmath>
@@ -10,7 +10,7 @@ struct Sum
     Float sum{0};
 };
 
-std::vector<Float> do_full_baa_step(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+std::vector<Float> do_full_baa_step(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& Q_i){
 	std::vector<Float> log_W_jk = compute_all_log_Wjk_den (transmitted, received, Q_i);
 	std::vector<Float> log_alphas = compute_all_log_alpha_k (transmitted, received, Q_i, log_W_jk);
@@ -27,7 +27,7 @@ std::vector<Float> do_full_baa_step(const std::vector<BitCodeWord>& transmitted,
 	return alphas;
 }
 
-std::vector<Float> compute_all_log_Wjk_den (const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+std::vector<Float> compute_all_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& Q_i){
 	// Iteratively call compute_log_Wjk_den for each possible received codeword.
 	std::vector<Float> log_Wjk_den;
@@ -38,7 +38,7 @@ std::vector<Float> compute_all_log_Wjk_den (const std::vector<BitCodeWord>& tran
 	return log_Wjk_den;
 }
 
-std::vector<Float> compute_all_log_alpha_k (const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+std::vector<Float> compute_all_log_alpha_k (const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& Q_i, const std::vector<Float>& log_W_jk_den){
 	// Iteratively call compute_log_alpha_k for each possible transmitted codeword.
 	std::vector<Float> log_alphas;
@@ -51,7 +51,7 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<BitCodeWord>& tran
 }
 
 
-Float compute_log_Wjk_den (const std::vector<BitCodeWord>& transmitted, const BitCodeWord& received, const std::vector<Float>& Q_i){
+Float compute_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i){
 	std::vector<Float> probs_col = compute_Pjk_col(transmitted, received);
 	Float denominator = 0.0;
 	for (auto pr_Qi : boost::combine(probs_col, Q_i))
@@ -64,7 +64,7 @@ Float compute_log_Wjk_den (const std::vector<BitCodeWord>& transmitted, const Bi
 }
 
 
-Float compute_log_alpha_k (const BitCodeWord& transmitted, const std::vector<BitCodeWord>& received, 
+Float compute_log_alpha_k (const EfficientBitCodeWord& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	Float Q_k, const std::vector<Float>& log_W_jk_den){
 	Float log_Q_k = log(Q_k);
 	std::vector<Float> probs_row = compute_Pjk_row(transmitted, received);
@@ -85,24 +85,24 @@ Float compute_log_alpha_k (const BitCodeWord& transmitted, const std::vector<Bit
 
 
 
-std::vector<Float> compute_Pjk_row(const BitCodeWord& transmitted, const std::vector<BitCodeWord>& received){
+std::vector<Float> compute_Pjk_row(const EfficientBitCodeWord& transmitted, const std::vector<EfficientBitCodeWord>& received){
 	std::vector<Float> res; res.reserve(received.size());
 	for(auto rec_iter = received.begin(); rec_iter != received.end(); ++rec_iter){
-		res.push_back(get_bit_transition_prob(transmitted, *rec_iter, false, true));
+		res.push_back(get_bit_transition_prob_fast(transmitted, *rec_iter));
 	}
 	return res;
 }
 
-std::vector<Float> compute_Pjk_col(const std::vector<BitCodeWord>& transmitted, const BitCodeWord& received){
+std::vector<Float> compute_Pjk_col(const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received){
 	std::vector<Float> res; res.reserve(transmitted.size());
 	for(auto trans_iter = transmitted.begin(); trans_iter != transmitted.end(); ++trans_iter){
-		res.push_back(get_bit_transition_prob(*trans_iter, received, false, true));
+		res.push_back(get_bit_transition_prob_fast(*trans_iter, received));
 	}
 	return res;
 }
 
 
-Float compute_bit_rate_efficient(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+Float compute_bit_rate_efficient_fast(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& log_W_jk_den, const std::vector<Float>& Q_i){
 	size_t n_I = transmitted.size();
 	size_t n_J = received.size();
@@ -130,7 +130,7 @@ Float compute_bit_rate_efficient(const std::vector<BitCodeWord>& transmitted, co
 }
 
 
-Float compute_rate(const std::vector<BitCodeWord>& transmitted, const std::vector<BitCodeWord>& received, 
+Float compute_rate(const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& Q_i){
 	std::vector<std::vector<Float> > prob_table;
 
@@ -143,7 +143,7 @@ Float compute_rate(const std::vector<BitCodeWord>& transmitted, const std::vecto
 	{
 		for (size_t j = 0; j < n_J; ++j)
 		{
-			prob_table[i][j] = get_bit_transition_prob(transmitted[i], received[j], false, true);
+			prob_table[i][j] = get_bit_transition_prob_fast(transmitted[i], received[j]);
 		}
 	}
 

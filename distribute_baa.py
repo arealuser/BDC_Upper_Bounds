@@ -149,7 +149,9 @@ def run_full_baa_algorithm(initial_Q: np.ndarray, cd: ChannelDetails, ed: Experi
 	t0 = time.time()
 	for i in tqdm(it.count()):
 		next_Q = do_baa_step(current_Q, cd, ed)
-		distance = np.max(np.log2(next_Q / current_Q))
+		arr = np.log2(next_Q / current_Q)
+		arr[np.isnan(arr)] = 0
+		distance = np.max(arr)
 		if ed.verbose:
 			print(f'Iteration Index: {i},\tDistance: {distance},\tRuntime: {time.time() - t0}')
 		current_Q = next_Q

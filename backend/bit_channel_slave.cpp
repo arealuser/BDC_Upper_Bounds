@@ -1,4 +1,5 @@
-#include "bit_baa.h"
+// #include "bit_baa.h"
+#include "bit_baa_fast.h"
 #include <cstring>
 
 const char* GENERATE_CODEWORDS = "gen_codewords";
@@ -22,8 +23,8 @@ void compute_denominators(const char* transmitted_codewords_filename, const char
 	FILE* Q_array_file = try_to_open_file(Q_array_filename, "rb");
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 
-	auto transmitted_codewords = load_bit_codewords_from_file(transmitted_codewords_file);
-	auto received_codewords = load_bit_codewords_from_file(received_codewords_file, start, end);
+	auto transmitted_codewords = load_bit_codewords_from_file_fast(transmitted_codewords_file);
+	auto received_codewords = load_bit_codewords_from_file_fast(received_codewords_file, start, end);
 	auto Q = load_1d_array_from_file(Q_array_file);
 
 	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
@@ -45,8 +46,8 @@ void compute_alphas(const char* transmitted_codewords_filename, const char* rece
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 
 	assert(start <= end);
-	auto transmitted_codewords = load_bit_codewords_from_file(transmitted_codewords_file, start, end);
-	auto received_codewords = load_bit_codewords_from_file(received_codewords_file);
+	auto transmitted_codewords = load_bit_codewords_from_file_fast(transmitted_codewords_file, start, end);
+	auto received_codewords = load_bit_codewords_from_file_fast(received_codewords_file);
 	std::vector<Float> Q;
 	Q.resize(end - start);
 	{
@@ -81,8 +82,8 @@ void compute_rate(const char* transmitted_codewords_filename, const char* receiv
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 
 	assert(start <= end);
-	auto transmitted_codewords = load_bit_codewords_from_file(transmitted_codewords_file, start, end);
-	auto received_codewords = load_bit_codewords_from_file(received_codewords_file);
+	auto transmitted_codewords = load_bit_codewords_from_file_fast(transmitted_codewords_file, start, end);
+	auto received_codewords = load_bit_codewords_from_file_fast(received_codewords_file);
 	std::vector<Float> Q;
 	Q.resize(end - start);
 	{
@@ -98,7 +99,7 @@ void compute_rate(const char* transmitted_codewords_filename, const char* receiv
 
 	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
 
-	Float rate = compute_bit_rate_efficient(transmitted_codewords, received_codewords, denominators, Q);
+	Float rate = compute_bit_rate_efficient_fast(transmitted_codewords, received_codewords, denominators, Q);
 	std::vector<Float> rate_as_array = {rate};
 
 	write_1d_array_to_file(output_file, rate_as_array);

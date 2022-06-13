@@ -74,19 +74,25 @@ def prep_for_baa_run(cd: ChannelDetails, ed: ExperimentDetails):
 	backend.generate_codewords(cd.up_to, cd.max_out_len, ed.rec_filename())
 
 def backend_compute_log_dens(params):
-	return backend.compute_log_dens(*params)
+	return np.reshape(backend.compute_log_dens(*params), (-1, 1))
+
+def log_sum(arrs):
+	arr = np.concatenate(arrs, axis=1)
+	base_lines = np.reshape(np.max(arr, axis=1), (-1, 1))
+	exp_arr = np.exp(arr - base_lines)
+	return np.log(np.sum(exp_arr, axis=1)) + np.ravel(base_lines)
 
 def compute_log_dens(cd: ChannelDetails, ed: ExperimentDetails):
 	"""
 	Distributes the computation of the logs of the denominators needed for completing a step of the BAA algorithm.
 	"""
-	jump_size = int(np.ceil(cd.output_alphabet_size() / ed.num_processors))
+	jump_size = int(np.ceil(cd.input_alphabet_size() / ed.num_processors))
 	with Pool(ed.num_processors) as worker_pool:
-		log_dens = np.concatenate(worker_pool.map(backend_compute_log_dens, [
+		log_dens = log_sum(worker_pool.map(backend_compute_log_dens, [
 									(ed.trans_filename(), ed.rec_filename(), start, start+jump_size, ed.current_Q_filename(),
 										cd.deletion_probability, ed.log_den_fn(i), cd.in_len, cd.max_out_len, cd.up_to)
-									for i, start in enumerate(range(0, cd.output_alphabet_size(), jump_size))
-									]), axis=0)
+									for i, start in enumerate(range(0, cd.input_alphabet_size(), jump_size))
+									]))
 	communicate_with_cpp.save_1d_array(log_dens, ed.log_den_all_fn())
 	return log_dens
 

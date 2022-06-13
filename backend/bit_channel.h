@@ -4,6 +4,7 @@
 
 typedef std::vector<uint8_t> BitCodeWord;
 
+struct EfficientBitCodeWord;
 
 void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to);
 
@@ -14,6 +15,7 @@ uint64_t btc_to_num(const BitCodeWord& codeword);
 BitCodeWord num_to_btc(uint64_t num, size_t len);
 
 uint64_t btc_to_idx(const BitCodeWord& codeword);
+uint64_t btc_to_idx(const EfficientBitCodeWord& codeword);
 uint64_t num_to_idx(uint64_t num, size_t len);
 
 /*

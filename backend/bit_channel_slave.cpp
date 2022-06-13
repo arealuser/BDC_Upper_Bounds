@@ -9,6 +9,8 @@ const char* COMPUTE_RATE = "rate";
 
 void generate_codewords(bool up_to, size_t max_len, const char* output_file_name){
 	auto codewords = get_all_bit_codewords(max_len, up_to);
+	std::sort(codewords.begin(), codewords.end(),
+		[](const BitCodeWord& word1, BitCodeWord& word2){return btc_to_idx(word1) < btc_to_idx(word2);});
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 	save_bit_codewords_to_file(output_file, codewords);
 	fclose(output_file);
@@ -23,9 +25,19 @@ void compute_denominators(const char* transmitted_codewords_filename, const char
 	FILE* Q_array_file = try_to_open_file(Q_array_filename, "rb");
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 
-	auto transmitted_codewords = load_bit_codewords_from_file_fast(transmitted_codewords_file);
-	auto received_codewords = load_bit_codewords_from_file_fast(received_codewords_file, start, end);
-	auto Q = load_1d_array_from_file(Q_array_file);
+	auto transmitted_codewords = load_bit_codewords_from_file_fast(transmitted_codewords_file, start, end);
+	auto received_codewords = load_bit_codewords_from_file_fast(received_codewords_file);
+
+	std::vector<Float> Q;
+	Q.resize(end - start);
+	{
+		auto Q_all = load_1d_array_from_file(Q_array_file);
+		assert(Q_all.size() >= end);
+		for (size_t i = 0; i < (end-start); ++i)
+		{
+			Q[i] = Q_all[start+i];
+		}
+	}
 
 	initialize_bit_channel(deletion_probability, input_len, output_len, up_to);
 

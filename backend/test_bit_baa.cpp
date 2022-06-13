@@ -14,15 +14,19 @@ int main()
 {
 	Float deletion_probability = 0.5;
 	initialize_channel(deletion_probability);
-	constexpr size_t in_len = 11;
-	constexpr size_t out_len = 9;
+	constexpr size_t in_len = 18;
+	constexpr size_t out_len = 5;
 	initialize_bit_channel(deletion_probability, in_len, out_len, false);
 
 	auto transmitted_codewords = get_all_bit_codewords(in_len);
 	auto received_codewords = get_all_bit_codewords(out_len);
 
 	std::vector<EfficientBitCodeWord> transmitted_codewords_efficient(transmitted_codewords.begin(), transmitted_codewords.end());
+	std::sort(transmitted_codewords_efficient.begin(), transmitted_codewords_efficient.end(),
+		[](const EfficientBitCodeWord& word1, EfficientBitCodeWord& word2){return btc_to_idx(word1) < btc_to_idx(word2);});
 	std::vector<EfficientBitCodeWord> received_codewords_efficient(received_codewords.begin(), received_codewords.end());
+	std::sort(received_codewords_efficient.begin(), received_codewords_efficient.end(),
+		[](const EfficientBitCodeWord& word1, EfficientBitCodeWord& word2){return btc_to_idx(word1) < btc_to_idx(word2);});
 
 	printf("%lu (= 2^%.1f) possible transmitted codewords\n", transmitted_codewords.size(), log(transmitted_codewords.size()) / log(2));
 	printf("%lu (= 2^%.1f) possible received codewords\n", received_codewords.size(), log(received_codewords.size()) / log(2));
@@ -34,10 +38,9 @@ int main()
 	std::for_each(Q.begin(), Q.end(), [transmitted_codewords](Float& Q){Q = 1.0 / transmitted_codewords.size();});
 
 
-	for (int i = 0; i < 101; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
-		// printf("%d\n", i);
-		if (i % 20 == 0)
+		if (true)
 		{
 			printf("Running the %dth step of the BAA algorithm (%.2f seconds)...\n", i+1, ((float) (clock() - t0)) / CLOCKS_PER_SEC);
 			printf("total probs = %.2f%%\t", 100 * (std::accumulate(Q.begin(), Q.end(), 0.0)));

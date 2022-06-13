@@ -220,6 +220,11 @@ inline BitCodeWord num_to_btc(uint64_t num, size_t len){
 inline uint64_t btc_to_idx(const BitCodeWord& codeword){
 	return num_to_idx(btc_to_num(codeword), codeword.size());
 }
+
+inline uint64_t btc_to_idx(const EfficientBitCodeWord& codeword){
+	return num_to_idx(codeword.num, codeword.len);
+}
+
 inline uint64_t num_to_idx(uint64_t num, size_t len){
 	return num ^ (1ULL << len);
 }

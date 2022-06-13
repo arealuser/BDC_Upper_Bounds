@@ -54,7 +54,7 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<EfficientBitCodeWo
 Float compute_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i){
 	std::vector<Float> probs_col = compute_Pjk_col(transmitted, received);
 	Float denominator = 0.0;
-	for (auto pr_Qi : boost::combine(probs_col, Q_i))
+	for (const auto& pr_Qi : boost::combine(probs_col, Q_i))
 	{
 		Float P_ji, Q_i;
 		boost::tie(P_ji, Q_i) = pr_Qi;
@@ -69,7 +69,7 @@ Float compute_log_alpha_k (const EfficientBitCodeWord& transmitted, const std::v
 	Float log_Q_k = log(Q_k);
 	std::vector<Float> probs_row = compute_Pjk_row(transmitted, received);
 	Float log_alpha = 0.0;
-	for(auto pr_den : boost::combine(probs_row, log_W_jk_den)){
+	for(const auto& pr_den : boost::combine(probs_row, log_W_jk_den)){
 		Float P_jk, log_den;
 		boost::tie(P_jk, log_den) = pr_den;
 		// Reduces the runtime of the algorithm by 30% with minimal change to the outcome.

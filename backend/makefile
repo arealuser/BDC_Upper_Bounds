@@ -16,11 +16,14 @@ CFLAGS = -Wall -W -O3 -fno-exceptions -fno-rtti -std=c++2a -g
 LIBS = stdc++ m
 LDFLAGS = $(LIBS:%=-l%)
 
-bit_channel: $(OBJECTS) all_mains
+bit_channel: all_mains
 	echo done
 
-all_mains : $(OBJECTS) $(MAINS)
+all_mains : $(MAINS)
 		echo done
+
+all: $(MAINS) $(OBJECTS)
+	echo done
 
 test: all_mains
 	./test_transition_probability_computation.out
@@ -30,8 +33,8 @@ test: all_mains
 bin:
 	mkdir bin	
 
-%.out : %.cpp $(OBJECTS) $(TRANSITION_OBJ)
-		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $^
+%.out : %.cpp $(SOURCES)  $(HEADERS) $(TRANSITION_OBJ)
+		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(OBJECTS) $(TRANSITION_OBJ) $<
 bin/%.o : %.cc $(HEADERS) bin
 		$(CC) $(CFLAGS) -c -o $@ $<
 

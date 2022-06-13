@@ -1,9 +1,9 @@
 Fix bug where when the number of processors used is not a power of 2 BAA crashes.
-Add more efficient bit channel probability cache-based computation:
+Add more efficient bit channel probability cache-based computation - Done.
 	Compute backend tables.
 	Add them to the CPP code.
 	Test the resulting distribution to ensure that the faster computation is correct.
 Utilize the symmetries for even faster BAA steps:
-	NOT symmetry should be easy.
+	NOT symmetry should be easy. - Done
 	Flip symmetry may be harder because of palindromic input strings.
 Finish analyzing and add run-based channel to code.

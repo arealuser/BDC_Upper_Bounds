@@ -27,7 +27,7 @@ class ChannelDetails:
 		return 2 ** self.max_out_len
 
 	def input_alphabet_size(self):
-		return 2 ** self.in_len
+		return 2 ** (self.in_len - 1)
 
 @dataclass
 class ExperimentDetails:
@@ -70,8 +70,8 @@ def prep_for_baa_run(cd: ChannelDetails, ed: ExperimentDetails):
 	if not os.path.isdir(ed.experiment_path):
 		os.mkdir(ed.experiment_path)
 	logging.basicConfig(filename=ed.log_file(), level=logging.INFO, filemode='a', format='%(relativeCreated)6d %(threadName)s %(message)s')
-	backend.generate_codewords(False, cd.in_len, ed.trans_filename())
-	backend.generate_codewords(cd.up_to, cd.max_out_len, ed.rec_filename())
+	backend.generate_codewords(False, cd.in_len, ed.trans_filename(), 1)
+	backend.generate_codewords(cd.up_to, cd.max_out_len, ed.rec_filename(), 0)
 
 def backend_compute_log_dens(params):
 	return np.reshape(backend.compute_log_dens(*params), (-1, 1))

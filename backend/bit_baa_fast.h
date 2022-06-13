@@ -51,3 +51,6 @@ std::vector<Float> compute_Pjk_col(const std::vector<EfficientBitCodeWord>& tran
 Float compute_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i);
 Float compute_log_alpha_k (const EfficientBitCodeWord& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	Float Q_k, const std::vector<Float>& log_W_jk_den);
+
+
+std::vector<EfficientBitCodeWord> get_transmitted_codewords_symmetries(const std::vector<EfficientBitCodeWord>& all_trans_codewords);

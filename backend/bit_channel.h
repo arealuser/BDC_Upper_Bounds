@@ -36,6 +36,14 @@ struct EfficientBitCodeWord
 	inline EfficientBitCodeWord(uint64_t n, size_t l) : num(n), len(l) {}
 	inline EfficientBitCodeWord(const BitCodeWord& word) : num(btc_to_num(word)), len(word.size()) {}
 	inline EfficientBitCodeWord(const CodeWord& word) : num(btc_to_num(convert_to_bit_word(word))), len(word.total_length) {}
+
+	/*
+	Uses a smart ordering to allow a simple sort of the array of efficient bit codwords to set equivalent codewords next
+		to one another for easier implementation of symmetry speed-ups.
+	*/
+	friend bool operator< (const EfficientBitCodeWord& a, const EfficientBitCodeWord& b);
+
+	friend EfficientBitCodeWord operator~ (const EfficientBitCodeWord& a);
 };
 
 /*
@@ -79,7 +87,7 @@ Saves the given array of codewords to the given file.
 Saves each codeword as 2 consecutive uint64_ts, where the first is the length of the codeword and the second is 
 	its bitwise representation.
 */
-void save_bit_codewords_to_file(FILE* out_file, const std::vector<BitCodeWord> codewords);
+void save_bit_codewords_to_file(FILE* out_file, const std::vector<EfficientBitCodeWord> codewords);
 
 /*
 Loads an array of codewords from the given file.

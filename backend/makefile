@@ -3,12 +3,12 @@ HEADERS = $(wildcard *.h)
 
 TRANSITION_SOURCES = $(wildcard transition_counts/*.cc)
 TRANSITION_HEADERS = $(wildcard transition_counts/*.h) $(wildcard transition_counts/*.inl)
-TRANSITION_OBJ = bin/transition_cache.o
+TRANSITION_OBJ = transition_cache.o
 
 MAIN_SOURCES = $(wildcard *.cpp)
 MAINS = $(MAIN_SOURCES:%.cpp=%.out)
 
-OBJECTS = $(SOURCES:%.cc=bin/%.o)
+OBJECTS = $(SOURCES:%.cc=%.o)
 
 # CC := $(shell which clang || which gcc)
 CC := g++-9
@@ -20,27 +20,24 @@ bit_channel: all_mains
 	echo done
 
 all_mains : $(MAINS)
-		echo done
+	echo done
 
 all: $(MAINS) $(OBJECTS)
 	echo done
 
-test: all_mains
+test: test_bit_baa.out test_transition_probability_computation.out test_baa.out
 	./test_transition_probability_computation.out
 	./test_bit_baa.out
-	./test_baa.out
+	./test_baa.out	
 
-bin:
-	mkdir bin	
-
-%.out : %.cpp $(SOURCES)  $(HEADERS) $(TRANSITION_OBJ)
-		$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(OBJECTS) $(TRANSITION_OBJ) $<
-bin/%.o : %.cc $(HEADERS) bin
-		$(CC) $(CFLAGS) -c -o $@ $<
+%.out : %.cpp $(OBJECTS) $(TRANSITION_OBJ)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(OBJECTS) $(TRANSITION_OBJ) $<
+%.o : %.cc $(HEADERS) 		
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(TRANSITION_OBJ): $(TRANSITION_SOURCES) $(TRANSITION_HEADERS)
 		$(CC) $(CFLAGS) -c -o $(TRANSITION_OBJ) transition_counts/cached_transition_count.cc
 
 .PHONY : clean
 clean :
-		rm -f $(OBJECTS) $(MAINS) $(TRANSITION_OBJ)
+	rm -f $(OBJECTS) $(MAINS) $(TRANSITION_OBJ)

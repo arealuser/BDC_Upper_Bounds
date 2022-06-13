@@ -32,8 +32,12 @@ std::vector<Float> compute_all_log_Wjk_den (const std::vector<EfficientBitCodeWo
 	// Iteratively call compute_log_Wjk_den for each possible received codeword.
 	std::vector<Float> log_Wjk_den;
 	log_Wjk_den.reserve(received.size());
-	for(auto rec_iter = received.begin(); rec_iter != received.end(); ++rec_iter){
-		log_Wjk_den.push_back(compute_log_Wjk_den(transmitted, *rec_iter, Q_i));
+	for(auto rec_iter = received.begin(); rec_iter != received.end(); rec_iter += 2){
+		auto den1 = compute_log_Wjk_den(transmitted, *rec_iter, Q_i);
+		auto den2 = compute_log_Wjk_den(transmitted, *(rec_iter + 1), Q_i);
+		Float entry = log((den1 + den2) / 2);
+		log_Wjk_den.push_back(entry);
+		log_Wjk_den.push_back(entry);
 	}
 	return log_Wjk_den;
 }
@@ -53,14 +57,8 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<EfficientBitCodeWo
 
 Float compute_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i){
 	std::vector<Float> probs_col = compute_Pjk_col(transmitted, received);
-	Float denominator = 0.0;
-	for (const auto& pr_Qi : boost::combine(probs_col, Q_i))
-	{
-		Float P_ji, Q_i;
-		boost::tie(P_ji, Q_i) = pr_Qi;
-		denominator += P_ji * Q_i;
-	}
-	return log(denominator);
+	Float denominator = std::inner_product(probs_col.begin(), probs_col.end(), Q_i.begin(), 0.0);
+	return denominator;
 }
 
 
@@ -69,16 +67,15 @@ Float compute_log_alpha_k (const EfficientBitCodeWord& transmitted, const std::v
 	Float log_Q_k = log(Q_k);
 	std::vector<Float> probs_row = compute_Pjk_row(transmitted, received);
 	Float log_alpha = 0.0;
-	for(const auto& pr_den : boost::combine(probs_row, log_W_jk_den)){
-		Float P_jk, log_den;
-		boost::tie(P_jk, log_den) = pr_den;
-		// Reduces the runtime of the algorithm by 30% with minimal change to the outcome.
+
+	for(size_t i = 0; i < probs_row.size(); ++i){
+		Float P_jk = probs_row[i];
+		Float log_den = log_W_jk_den[i];
 		if (P_jk < 1E-12)
 		{
 			continue;
 		}
 		log_alpha += P_jk * (log_Q_k + log(P_jk) - log_den);
-		// log_alpha += P_jk;
 	}
 	return log_alpha;
 }
@@ -111,13 +108,13 @@ Float compute_bit_rate_efficient(const std::vector<EfficientBitCodeWord>& transm
 
 	for(size_t i = 0; i < n_I; ++i){
 		auto probs_row = compute_Pjk_row(transmitted[i], received);
-		std::vector<Float> log_probs_row = probs_row;
-		for_each(log_probs_row.begin(), log_probs_row.end(), [](Float& x){x = log(x);});
+		// std::vector<Float> log_probs_row = probs_row;
+		// for_each(log_probs_row.begin(), log_probs_row.end(), [](Float& x){x = log(x);});
 		Float Qk = Q_i[i];
 		for(size_t j = 0; j < n_J; ++j){
 			Float log_den = log_W_jk_den[j];
 			Float P_jk = probs_row[j];
-			Float log_P_jk = log_probs_row[j];
+			Float log_P_jk = log(P_jk);
 			if (P_jk < 1E-20)
 			{
 				continue;
@@ -176,4 +173,15 @@ Float compute_rate(const std::vector<EfficientBitCodeWord>& transmitted, const s
 	}
 
 	return rate;
+}
+
+std::vector<EfficientBitCodeWord> get_transmitted_codewords_symmetries(const std::vector<EfficientBitCodeWord>& all_trans_codewords){
+	assert(all_trans_codewords.size() % 2 == 0);
+	std::vector<EfficientBitCodeWord> even_codewords;
+	even_codewords.reserve(all_trans_codewords.size() / 2);
+	for (size_t i = 0; i < all_trans_codewords.size(); i += 2)
+	{
+		even_codewords.push_back(all_trans_codewords[i]);
+	}
+	return even_codewords;
 }

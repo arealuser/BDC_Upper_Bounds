@@ -44,6 +44,7 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<BitCodeWord>& tran
 	std::vector<Float> log_alphas;
 	log_alphas.reserve(transmitted.size());
 	auto Q_iter = Q_i.begin();
+	
 	for(auto trans_iter = transmitted.begin(); trans_iter != transmitted.end(); ++trans_iter){
 		log_alphas.push_back(compute_log_alpha_k(*trans_iter, received, *(Q_iter++), log_W_jk_den));
 	}
@@ -69,16 +70,15 @@ Float compute_log_alpha_k (const BitCodeWord& transmitted, const std::vector<Bit
 	Float log_Q_k = log(Q_k);
 	std::vector<Float> probs_row = compute_Pjk_row(transmitted, received);
 	Float log_alpha = 0.0;
-	for(auto pr_den : boost::combine(probs_row, log_W_jk_den)){
-		Float P_jk, log_den;
-		boost::tie(P_jk, log_den) = pr_den;
-		// Reduces the runtime of the algorithm by 30% with minimal change to the outcome.
+	for (size_t i = 0; i < log_W_jk_den.size(); ++i)
+	{
+		Float P_jk = probs_row[i];
 		if (P_jk < 1E-12)
 		{
 			continue;
 		}
+		Float log_den = log_W_jk_den[i];
 		log_alpha += P_jk * (log_Q_k + log(P_jk) - log_den);
-		// log_alpha += P_jk;
 	}
 	return log_alpha;
 }

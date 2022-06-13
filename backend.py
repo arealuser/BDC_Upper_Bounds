@@ -14,11 +14,11 @@ def run_backend(*params):
 	logging.info(' '.join(["'" + BINARY_PATH + "'"] + [str(x) for x in params]).encode('utf-8'))
 	return subprocess.Popen([BINARY_PATH] + [str(x) for x in params])
 
-def generate_codewords(up_to: bool, max_len: int, output_filename: str):
+def generate_codewords(up_to: bool, max_len: int, output_filename: str, transmitted: int):
 	"""
 	Uses the backend to generate a file with the codewords
 	"""
-	run_backend(GENERATE_CODEWORDS, int(up_to), max_len, output_filename).wait()
+	run_backend(GENERATE_CODEWORDS, int(up_to), max_len, output_filename, transmitted).wait()
 
 def compute_log_dens(transmitted_codewords_filename: str, received_codewords_filename: str, 
 	start: int, end: int, Q_array_filename: str, deletion_probability: float, output_file_name: str, 

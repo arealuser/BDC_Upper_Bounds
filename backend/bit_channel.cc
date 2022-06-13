@@ -110,11 +110,11 @@ std::vector<BitCodeWord> get_all_bit_codewords(size_t len, bool up_to){
 
 
 
-void save_bit_codewords_to_file(FILE* out_file, const std::vector<BitCodeWord> codewords){
+void save_bit_codewords_to_file(FILE* out_file, const std::vector<EfficientBitCodeWord> codewords){
 	for (const auto& btc : codewords)
 	{
-		uint64_t len = btc.size();
-		uint64_t num = btc_to_num(btc);
+		uint64_t len = btc.len;
+		uint64_t num = btc.num;
 		fwrite(&len, sizeof(len), 1, out_file);
 		fwrite(&num, sizeof(num), 1, out_file);
 	}

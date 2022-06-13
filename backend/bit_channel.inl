@@ -243,3 +243,22 @@ inline uint64_t btc_to_num(_InputIter first, _InputIter last){
 	}
 	return res;
 }
+
+inline bool operator< (const EfficientBitCodeWord& a, const EfficientBitCodeWord& b){
+	if (a.len != b.len)
+	{
+		return a.len < b.len;
+	}
+	uint64_t n1 = std::min(a.num, (uint64_t)((1ULL << a.len) - 1) ^ a.num);
+	uint64_t n2 = std::min(b.num, (uint64_t)((1ULL << b.len) - 1) ^ b.num);
+	if (n1 != n2)
+	{
+		return n1 < n2;
+	}
+	return a.num < b.num;
+}
+
+
+inline EfficientBitCodeWord operator~ (const EfficientBitCodeWord& a){
+	return EfficientBitCodeWord(~a.num, a.len);
+}

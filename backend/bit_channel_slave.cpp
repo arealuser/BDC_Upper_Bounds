@@ -7,10 +7,15 @@ const char* COMPUTE_DENOMS = "denominators";
 const char* COMPUTE_ALPHAS = "alphas";
 const char* COMPUTE_RATE = "rate";
 
-void generate_codewords(bool up_to, size_t max_len, const char* output_file_name){
-	auto codewords = get_all_bit_codewords(max_len, up_to);
+void generate_codewords(bool up_to, size_t max_len, const char* output_file_name, bool is_transmitted){
+	auto ineff_codewords = get_all_bit_codewords(max_len, up_to);
+	std::vector<EfficientBitCodeWord> codewords(ineff_codewords.begin(), ineff_codewords.end());
 	std::sort(codewords.begin(), codewords.end(),
-		[](const BitCodeWord& word1, BitCodeWord& word2){return btc_to_idx(word1) < btc_to_idx(word2);});
+		[](const EfficientBitCodeWord& word1, const EfficientBitCodeWord& word2){return word1 < word2;});
+	if (is_transmitted)
+	{
+		codewords = get_transmitted_codewords_symmetries(codewords);
+	}
 	FILE* output_file = try_to_open_file(output_file_name, "wb");
 	save_bit_codewords_to_file(output_file, codewords);
 	fclose(output_file);
@@ -132,15 +137,16 @@ int main(int argc, char const *argv[])
 	{
 		// Generate a file with all of the codewords. This is done so that different iterations of the computation
 		//    can have the same codewords and won't need to produce them all.
-		if (argc != 5)
+		if (argc != 6)
 		{
-			fprintf(stderr, "Usage %s %s up_to max_len output_file_name\n", argv[0], argv[1]);
+			fprintf(stderr, "Usage %s %s up_to max_len output_file_name is_transmitted\n", argv[0], argv[1]);
 			exit(1);
 		}
 		bool up_to = atoi(argv[2]);
 		size_t max_len = atol(argv[3]);
 		const char* output_file_name = argv[4];
-		generate_codewords(up_to, max_len, output_file_name);
+		bool is_transmitted = atoi(argv[5]);
+		generate_codewords(up_to, max_len, output_file_name, is_transmitted);
 		return 0;
 	} else if(!strcmp(argv[1], COMPUTE_DENOMS)){
 		// Compute the denominators of the W_jk parameters. These are used in the logarithm portion of the formula for the alphas

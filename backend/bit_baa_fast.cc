@@ -1,6 +1,5 @@
 #include "bit_baa_fast.h"
 #include <algorithm>
-#include <boost/range/combine.hpp>
 #include <cmath>
 
 
@@ -29,12 +28,12 @@ std::vector<Float> do_full_baa_step(const std::vector<EfficientBitCodeWord>& tra
 
 std::vector<Float> compute_all_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	const std::vector<Float>& Q_i){
-	// Iteratively call compute_log_Wjk_den for each possible received codeword.
+	// Iteratively call compute_Wjk_den for each possible received codeword.
 	std::vector<Float> log_Wjk_den;
 	log_Wjk_den.reserve(received.size());
 	for(auto rec_iter = received.begin(); rec_iter != received.end(); rec_iter += 2){
-		auto den1 = compute_log_Wjk_den(transmitted, *rec_iter, Q_i);
-		auto den2 = compute_log_Wjk_den(transmitted, *(rec_iter + 1), Q_i);
+		auto den1 = compute_Wjk_den(transmitted, *rec_iter, Q_i);
+		auto den2 = compute_Wjk_den(transmitted, *(rec_iter + 1), Q_i);
 		Float entry = log((den1 + den2) / 2);
 		log_Wjk_den.push_back(entry);
 		log_Wjk_den.push_back(entry);
@@ -55,7 +54,7 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<EfficientBitCodeWo
 }
 
 
-Float compute_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i){
+Float compute_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i){
 	std::vector<Float> probs_col = compute_Pjk_col(transmitted, received);
 	Float denominator = std::inner_product(probs_col.begin(), probs_col.end(), Q_i.begin(), 0.0);
 	return denominator;

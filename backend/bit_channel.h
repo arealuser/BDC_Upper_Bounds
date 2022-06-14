@@ -1,12 +1,13 @@
 #pragma once
 #include "channel.h"
+#include "cached_transition_probs.h"
 
 
 typedef std::vector<uint8_t> BitCodeWord;
 
 struct EfficientBitCodeWord;
 
-void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to);
+void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to, bool load_cache=true);
 
 template <typename _InputIter>
 uint64_t btc_to_num(_InputIter first, _InputIter last);

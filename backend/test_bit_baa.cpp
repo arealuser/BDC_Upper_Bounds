@@ -7,7 +7,6 @@
 #include <ctime>
 #include <cassert>
 #include <cmath>
-#include <boost/range/combine.hpp>
 
 
 int main()
@@ -79,29 +78,5 @@ int main()
 		Q = do_full_baa_step(transmitted_codewords_efficient, received_codewords_efficient, Q);
 		// Q2 = do_full_baa_step(transmitted_codewords, received_codewords, Q2);
 	}
-
-		
-
-	// std::vector<Float> Q2 = Qs[0];
-	// Float s = 0;
-	// for(auto q_12 : boost::combine(Q, Q2)){
-	// 	Float q1, q2;
-	// 	boost::tie(q1, q2) = q_12;
-	// 	s += std::abs(q1 - q2);
-	// }
-
-	// printf("TVD between implementations: %f%%\n", s * 100);
-
-	// s = 0;
-	// for(size_t i; i < transmitted_codewords.size(); ++i){
-	// 	if (Q[i] >= Qs[0][i])
-	// 	{
-	// 		s += Q[i] - Qs[0][i];
-	// 	}else{
-	// 		s -= Q[i] - Qs[0][i];
-	// 	}
-	// }
-
-	// printf("TVD between implementations: %f%%\n", s * 100);
 	return 0;
 }

@@ -48,7 +48,7 @@ std::vector<Float> compute_Pjk_row(const EfficientBitCodeWord& transmitted, cons
 
 std::vector<Float> compute_Pjk_col(const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received);
 
-Float compute_log_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i);
+Float compute_Wjk_den (const std::vector<EfficientBitCodeWord>& transmitted, const EfficientBitCodeWord& received, const std::vector<Float>& Q_i);
 Float compute_log_alpha_k (const EfficientBitCodeWord& transmitted, const std::vector<EfficientBitCodeWord>& received, 
 	Float Q_k, const std::vector<Float>& log_W_jk_den);
 

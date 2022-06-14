@@ -1,6 +1,5 @@
 #include "baa.h"
 #include <algorithm>
-#include <boost/range/combine.hpp>
 #include <cmath>
 
 
@@ -53,13 +52,7 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<CodeWord>& transmi
 
 Float compute_log_Wjk_den (const std::vector<CodeWord>& transmitted, const CodeWord& received, const std::vector<Float>& Q_i){
 	std::vector<Float> probs_col = compute_Pjk_col(transmitted, received);
-	Float denominator = 0.0;
-	for (auto pr_Qi : boost::combine(probs_col, Q_i))
-	{
-		Float P_ji, Q_i;
-		boost::tie(P_ji, Q_i) = pr_Qi;
-		denominator += P_ji * Q_i;
-	}
+	Float denominator = std::inner_product(probs_col.begin(), probs_col.end(), Q_i.begin(), 0.0);
 	return log(denominator);
 }
 
@@ -69,9 +62,10 @@ Float compute_log_alpha_k (const CodeWord& transmitted, const std::vector<CodeWo
 	Float log_Q_k = log(Q_k);
 	std::vector<Float> probs_row = compute_Pjk_row(transmitted, received);
 	Float log_alpha = 0.0;
-	for(auto pr_den : boost::combine(probs_row, log_W_jk_den)){
+	for(size_t i = 0; i < log_W_jk_den.size(); ++i){
 		Float P_jk, log_den;
-		boost::tie(P_jk, log_den) = pr_den;
+		P_jk = probs_row[i];
+		log_den = log_W_jk_den[i];
 		// Reduces the runtime of the algorithm by 30% with minimal change to the outcome.
 		if (P_jk < 1E-12)
 		{

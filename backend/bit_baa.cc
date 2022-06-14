@@ -1,6 +1,5 @@
 #include "bit_baa.h"
 #include <algorithm>
-#include <boost/range/combine.hpp>
 #include <cmath>
 
 
@@ -54,13 +53,7 @@ std::vector<Float> compute_all_log_alpha_k (const std::vector<BitCodeWord>& tran
 
 Float compute_log_Wjk_den (const std::vector<BitCodeWord>& transmitted, const BitCodeWord& received, const std::vector<Float>& Q_i){
 	std::vector<Float> probs_col = compute_Pjk_col(transmitted, received);
-	Float denominator = 0.0;
-	for (auto pr_Qi : boost::combine(probs_col, Q_i))
-	{
-		Float P_ji, Q_i;
-		boost::tie(P_ji, Q_i) = pr_Qi;
-		denominator += P_ji * Q_i;
-	}
+	Float denominator = std::inner_product(probs_col.begin(), probs_col.end(), Q_i.begin(), 0.0);
 	return log(denominator);
 }
 

@@ -6,7 +6,6 @@
 #include <ctime>
 #include <cassert>
 #include <cmath>
-#include <boost/range/combine.hpp>
 
 
 int main()
@@ -59,12 +58,11 @@ int main()
 
 	std::vector<Float> Q2 = Qs[0];
 	Float s = 0;
-	for(auto q_12 : boost::combine(Q, Q2)){
-		Float q1, q2;
-		boost::tie(q1, q2) = q_12;
-		s += std::abs(q1 - q2);
+	for(size_t i = 0; i < Q.size(); ++i){
+		s += std::abs(Q[i] - Q2[i]);
 	}
 
 	printf("TVD between implementations: %f%%\n", s * 100);
+	assert(s < 1E-6);
 	return 0;
 }

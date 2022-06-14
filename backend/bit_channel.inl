@@ -1,7 +1,5 @@
 #pragma once
 #include "bit_channel.h"
-#include "transition_counts/cached_transition_count.h"
-
 
 
 extern std::vector<std::vector<Float> > _normalization_factors;
@@ -41,10 +39,10 @@ inline size_t get_num_transition_possibilities(const BitCodeWord& transmitted, c
 	if (verbose)
 	{
 		printf("dynamic_programming_state = [\n");
-		for (size_t i = 0; i < st; ++i)
+		for (size_t i = 0; i < sr; ++i)
 		{
 			printf("\t[");
-			for (size_t j = 0; j < sr; ++j)
+			for (size_t j = 0; j < st; ++j)
 			{
 				printf("%lu\t", dynamic_programming_state[(i*st)+j]);
 			}
@@ -166,6 +164,10 @@ inline size_t get_num_transition_possibilities_using_cache_fast(const EfficientB
 	size_t total = 0;
 	size_t trans_num1 = transmitted.num >> n2;
 	size_t trans_num2 = transmitted.num  & ((1 << n2) - 1);
+	if (verbose)
+	{
+		printf("n = %lu, k = %lu\n", n, k);
+	}
 	for (size_t i = 0; i <= k; ++i)
 	{
 		size_t k1 = i;

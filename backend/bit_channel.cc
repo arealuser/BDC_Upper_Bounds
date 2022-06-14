@@ -5,7 +5,7 @@
 std::vector<std::vector<Float> > _normalization_factors;
 Float _deletion_prob = 0.0;
 
-void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to){
+void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, bool up_to, bool load_cache){
 	_deletion_prob = deletion_prob;
 	_normalization_factors.resize(in_len+1);
 	for (size_t i_len = 0; i_len < in_len+1; ++i_len)
@@ -34,6 +34,19 @@ void initialize_bit_channel(Float deletion_prob, size_t in_len, size_t out_len, 
 		for (size_t k = 0; k < out_len+1; ++k)
 		{
 			_normalization_factors[i_len][k] = prob_out_len_k[k] / total;
+		}
+	}
+
+	if (load_cache)
+	{
+		size_t n = in_len;
+		size_t k = out_len;
+		for (size_t n1 = 0; n1 <= (n+1)/2; ++n1)
+		{
+			for (size_t k1 = 0; k1 <= k; ++k1)
+			{
+				load_transition_cache(n1, k1);
+			}
 		}
 	}
 		
